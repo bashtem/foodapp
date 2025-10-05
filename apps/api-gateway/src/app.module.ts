@@ -1,16 +1,118 @@
-import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { join } from 'path';
-import { OrdersController } from './orders.controller';
-import { RestaurantsController } from './restaurants.controller';
-import { PaymentsController } from './payments.controller';
+import { Module } from "@nestjs/common";
+import { LoggerModule } from "nestjs-pino";
+import { ClientsModule, Transport } from "@nestjs/microservices";
+import path, { join } from "path";
+import { AuthController } from "./auth/auth.controller";
+import { RestaurantsController } from "./restaurants/restaurants.controller";
+import { PaymentsController } from "./payments/payments.controller";
+import { OrdersController } from "./orders/orders.controller";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { Environment } from "@foodapp/utils/src/environment.enum";
+import { UsersController } from "./users/users.controller";
+
+import * as fs from "fs";
+const envFile = path.resolve(__dirname, `../.env.${process.env.NODE_ENV}`);
+const fallbackEnvFile = path.resolve(
+  __dirname,
+  `../.env.${Environment.Development}`
+);
 
 @Module({
-  imports:[ClientsModule.register([
-    { name:'ORDER_GRPC', transport: Transport.GRPC, options:{ url: process.env.ORDER_GRPC_ADDR || 'localhost:50051', package:'order.v1', protoPath: join(__dirname, '../../..', 'packages/proto/order.proto') } },
-    { name:'RESTAURANT_GRPC', transport: Transport.GRPC, options:{ url: process.env.RESTAURANT_GRPC_ADDR || 'localhost:50052', package:'restaurant.v1', protoPath: join(__dirname, '../../..', 'packages/proto/restaurant.proto') } },
-    { name:'PAYMENT_GRPC', transport: Transport.GRPC, options:{ url: process.env.PAYMENT_GRPC_ADDR || 'localhost:50053', package:'payment.v1', protoPath: join(__dirname, '../../..', 'packages/proto/payment.proto') } }
-  ])],
-  controllers:[OrdersController, RestaurantsController, PaymentsController]
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: fs.existsSync(envFile) ? envFile : fallbackEnvFile,
+    }),
+    // LoggerModule.forRoot(),
+    ClientsModule.registerAsync([
+      {
+        name: "ORDER_GRPC",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: config.get<string>("ORDER_GRPC_URL", "localhost:50051"),
+            package: "order.v1",
+            protoPath: join(
+              __dirname,
+              "../../..",
+              "packages/proto/order.proto"
+            ),
+          },
+        }),
+      },
+      {
+        name: "RESTAURANT_GRPC",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: config.get<string>("RESTAURANT_GRPC_URL", "localhost:50052"),
+            package: "restaurant.v1",
+            protoPath: join(
+              __dirname,
+              "../../..",
+              "packages/proto/restaurant.proto"
+            ),
+          },
+        }),
+      },
+      {
+        name: "PAYMENT_GRPC",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: config.get<string>("PAYMENT_GRPC_URL", "localhost:50053"),
+            package: "payment.v1",
+            protoPath: join(
+              __dirname,
+              "../../..",
+              "packages/proto/payment.proto"
+            ),
+            loader: { keepCase: true },
+          },
+        }),
+      },
+      {
+        name: "AUTH_GRPC",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: config.get<string>("AUTH_GRPC_URL", "localhost:50054"),
+            package: "auth.v1",
+            protoPath: join(__dirname, "../../..", "packages/proto/auth.proto"),
+            loader: { keepCase: true },
+          },
+        }),
+      },
+      {
+        name: "USER_GRPC",
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: config.get<string>("USER_GRPC_URL", "localhost:50055"),
+            package: "user.v1",
+            protoPath: join(__dirname, "../../..", "packages/proto/user.proto"),
+            loader: { keepCase: true },
+          },
+        }),
+      },
+    ]),
+  ],
+  controllers: [
+    OrdersController,
+    RestaurantsController,
+    PaymentsController,
+    AuthController,
+    UsersController,
+  ],
 })
 export class AppModule {}

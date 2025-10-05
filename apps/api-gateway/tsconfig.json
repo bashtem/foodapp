@@ -1,1 +1,7 @@
-{ "extends":"../../packages/config/tsconfig.base.json","compilerOptions":{"outDir":"dist"},"include":["src"] }
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+  "outDir": "dist",
+  },
+  "include": ["src", "../../packages/utils/src/dto/auth.dto.ts"]
+}

@@ -1,0 +1,25 @@
+syntax = "proto3"; 
+package auth.v1;
+
+
+message LoginRequest { string email = 1; string password = 2; }
+message LoginResponse { string accessToken = 1; }
+
+message VerifyRequest { string accessToken = 1; }
+message VerifyResponse { bool valid = 1; string userId = 2; string role = 3; }
+
+message RegisterRequest { string email = 1; string password = 2; string name = 3; string role = 4; }
+message RegisterResponse { string userId = 1; }
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Verify(VerifyRequest) returns (VerifyResponse);
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+}
+
+enum UserRole {
+  CUSTOMER = 0;
+  RESTAURANT = 1;
+  COURIER = 2;
+  ADMIN = 3;
+}

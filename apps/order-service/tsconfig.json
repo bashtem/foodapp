@@ -1,1 +1,9 @@
-{ "extends":"../../packages/config/tsconfig.base.json","compilerOptions":{"outDir":"dist"},"include":["src"] }
+{
+  "extends": "../../packages/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "experimentalDecorators": true,
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src"]
+}
