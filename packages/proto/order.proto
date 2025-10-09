@@ -1,10 +1,35 @@
 syntax = "proto3";
+
 package order.v1;
-message OrderItem { string menu_item_id = 1; int32 quantity = 2; }
-message CreateOrderRequest { string customer_id = 1; string restaurant_id = 2; repeated OrderItem items = 3; }
-message GetOrderRequest { string id = 1; }
-message UpdateStatusRequest { string id = 1; string status = 2; }
-message Order { string id = 1; string customer_id = 2; string restaurant_id = 3; string status = 4; double total = 5; }
+
+message OrderItem {
+  string menu_item_id = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderRequest {
+  string customer_id = 1;
+  string restaurant_id = 2;
+  repeated OrderItem items = 3;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message UpdateStatusRequest {
+  string id = 1;
+  string status = 2;
+}
+
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  string restaurant_id = 3;
+  string status = 4;
+  double total = 5;
+}
+
 service OrderService {
   rpc CreateOrder(CreateOrderRequest) returns (Order);
   rpc GetOrder(GetOrderRequest) returns (Order);

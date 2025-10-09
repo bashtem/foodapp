@@ -3,10 +3,10 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { Transport, MicroserviceOptions } from "@nestjs/microservices";
 import { join } from "path";
-import { logger } from "@foodapp/utils/src/logger";
 import { ConfigService } from "@nestjs/config";
+import { Logger } from "@nestjs/common";
 
-(async () => {
+const bootstrap = async () => {
   // Create an application context to access ConfigService
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const configService = appContext.get(ConfigService);
@@ -26,5 +26,7 @@ import { ConfigService } from "@nestjs/config";
   );
 
   await app.listen();
-  logger.log(`User Service listening on ${grpcUrl.split(":")[1] || 50055}`);
-})();
+  Logger.log(`User Service listening on ${grpcUrl.split(":")[1] || 50055}`);
+};
+
+bootstrap();

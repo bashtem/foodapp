@@ -1,7 +1,19 @@
 syntax = "proto3";
+
 package payment.v1;
-message PaymentIntentRequest { string order_id = 1; double amount = 2; string currency = 3; }
-message PaymentIntent { string id = 1; string status = 2; string reference = 3; }
+
+message PaymentIntentRequest {
+  string order_id = 1;
+  double amount = 2;
+  string currency = 3;
+}
+
+message PaymentIntent {
+  string id = 1;
+  string status = 2;
+  string reference = 3;
+}
+
 service PaymentService {
   rpc CreateIntent(PaymentIntentRequest) returns (PaymentIntent);
 }

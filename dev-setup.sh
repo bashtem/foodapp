@@ -1,6 +1,15 @@
 #!/bin/bash
 
-# Navigate to the infra folder and run docker compose
-cd "$(dirname "$0")/infra/_dev" || exit 1
+ACTION=${1:-up}
 
-docker compose up -d
+cd "infra/_dev" || exit 1
+
+if [ "$ACTION" = "down" ]; then
+  docker compose down
+elif [ "$ACTION" = "up" ]; then
+  docker compose up -d
+  echo "Docker Compose services started in detached mode."
+else
+  echo "Usage: $0 [up|down]"
+  exit 1
+fi

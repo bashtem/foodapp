@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+enum UserRole {
+  CUSTOMER = 1;
+  RESTAURANT = 2;
+  COURIER = 3;
+  ADMIN = 4;
+}

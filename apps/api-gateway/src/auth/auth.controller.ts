@@ -11,8 +11,8 @@ import {
   Req,
 } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
-import { AuthSvc } from "@foodapp/utils/src/interfaces";
-import { LoginDto, RegisterDto, VerifyDto } from "@foodapp/utils/src/dto/auth.dto";
+import { AuthService } from "@foodapp/utils/src/interfaces";
+import { LoginDto, VerifyDto } from "@foodapp/utils/src/dto";
 import {
   ApiErrorCode,
   ApiSuccessCode,
@@ -23,13 +23,13 @@ import { Request } from "express";
 
 @Controller("auth")
 export class AuthController implements OnModuleInit {
-  private authService!: AuthSvc;
+  private authService!: AuthService;
 
   private readonly logger = new Logger(AuthController.name);
   constructor(@Inject("AUTH_GRPC") private readonly client: ClientGrpc) {}
 
   onModuleInit() {
-    this.authService = this.client.getService<AuthSvc>("AuthService");
+    this.authService = this.client.getService<AuthService>("AuthService");
   }
 
   @Post("login")
@@ -53,27 +53,6 @@ export class AuthController implements OnModuleInit {
           message: error.response || error.message || ApiErrorCode.LOGIN_FAILED,
         }),
         HttpStatus.UNAUTHORIZED
-      );
-    }
-  }
-
-  @Post("register")
-  async register(@Body() registerDto: RegisterDto) {
-    try {
-      const data = await firstValueFrom(this.authService.register(registerDto));
-      return createResponse({
-        code: StatusCode.CREATED,
-        message: ApiSuccessCode.REGISTER_SUCCESS,
-        data,
-      });
-    } catch (error: any) {
-      this.logger.error(`Register failed`, error);
-      throw new HttpException(
-        createResponse({
-          code: StatusCode.BAD_REQUEST,
-          message: error.response || error.message || ApiErrorCode.REGISTER_FAILED,
-        }),
-        HttpStatus.BAD_REQUEST
       );
     }
   }

@@ -10,20 +10,17 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Environment } from "@foodapp/utils/src/environment.enum";
 import { UsersController } from "./users/users.controller";
 
-import * as fs from "fs";
-const envFile = path.resolve(__dirname, `../.env.${process.env.NODE_ENV}`);
-const fallbackEnvFile = path.resolve(
-  __dirname,
-  `../.env.${Environment.Development}`
-);
-
 @Module({
   imports: [
+    // LoggerModule.forRoot(),
+
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: fs.existsSync(envFile) ? envFile : fallbackEnvFile,
+      envFilePath: path.resolve(
+        __dirname,
+        `../.env.${process.env.NODE_ENV?.trim() || Environment.Development}`
+      ),
     }),
-    // LoggerModule.forRoot(),
     ClientsModule.registerAsync([
       {
         name: "ORDER_GRPC",

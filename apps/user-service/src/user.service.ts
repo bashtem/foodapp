@@ -1,29 +1,57 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
+import { RegisterUserDto } from "@foodapp/utils/src/dto/";
+import { UserRole } from "@foodapp/utils/src/enums/role";
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  private readonly logger = new Logger(UserService.name);
 
-  async create(data: any) {
-    const password_hash = await bcrypt.hash(data.password, 10);
-    return this.repo.save(
-      this.repo.create({
-        email: data.email,
-        password_hash,
-        role: data.role || "customer",
-      })
-    );
-  }
-
-  get(id: string) {
-    return this.repo.findOne({ where: { id } });
-  }
+  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
   findByEmail(email: string) {
-    return this.repo.findOne({ where: { email } });
+    return this.userRepo.findOne({ where: { email } });
+  }
+
+  findById(id: string) {
+    return this.userRepo.findOne({ where: { id } });
+  }
+
+  findByPhone(phone: string) {
+    return this.userRepo.findOne({ where: { phone } });
+  }
+
+  async registerUser(userData: RegisterUserDto) {
+    const { email, name, phone, password, role } = userData;
+
+    const emailExist = await this.findByEmail(email);
+    if (emailExist) {
+      throw new HttpException("Email already in use", HttpStatus.BAD_REQUEST);
+    }
+
+    const phoneExist = await this.findByPhone(phone);
+    if (phoneExist) {
+      throw new HttpException("Phone number already in use", HttpStatus.BAD_REQUEST);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User();
+    user.email = email;
+    user.name = name;
+    user.phone = phone;
+    user.hashedPassword = hashedPassword;
+    user.role = role || UserRole.CUSTOMER;
+
+    this.logger.log(`Creating user: ${email} with role: ${user.role}`);
+
+    return this.userRepo.save(user);
+  }
+
+  delete(id: string) {
+    return this.userRepo.delete(id);
   }
 }

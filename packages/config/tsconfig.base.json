@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames":true,
     "baseUrl":".",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "incremental": true,
   }
 }

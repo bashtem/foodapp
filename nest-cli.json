@@ -1,0 +1,29 @@
+{
+  "monorepo": true,
+  "root": "apps/foodapp",
+  "sourceRoot": "apps/foodapp/src",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/foodapp/tsconfig.app.json"
+  },
+  "projects": {
+    "foodapp": {
+      "type": "application",
+      "root": "apps/foodapp",
+      "entryFile": "main",
+      "sourceRoot": "apps/foodapp/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/foodapp/tsconfig.app.json"
+      }
+    },
+    "notification": {
+      "type": "application",
+      "root": "apps/notification",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification/tsconfig.app.json"
+      }
+    }
+  }
+}

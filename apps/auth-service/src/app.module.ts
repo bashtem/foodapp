@@ -3,7 +3,7 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
 import { AuthGrpcController } from "./auth.grpc";
 import { AuthService } from "./auth.service";
 import { JwtModule } from "@nestjs/jwt";
-import { join } from "path";
+import path, { join } from "path";
 import { ConfigModule } from "@nestjs/config";
 import { Environment } from "@foodapp/utils/src/environment.enum";
 
@@ -11,7 +11,10 @@ import { Environment } from "@foodapp/utils/src/environment.enum";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || Environment.Development}`,
+      envFilePath: path.resolve(
+        __dirname,
+        `../.env.${process.env.NODE_ENV?.trim() || Environment.Development}`
+      ),
     }),
     JwtModule.register({ secret: process.env.JWT_SECRET || "devsecret" }),
     ClientsModule.register([

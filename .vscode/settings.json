@@ -6,5 +6,36 @@
         "**/.git/**": true,
         "**/node_modules/**": true,
         "**/.vscode/**": true
-    }
+    },
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3307,
+            "driver": "MySQL",
+            "database": "foodapp_user",
+            "username": "foodapp",
+            "password": "foodapp",
+            "name": "foodapp_user"
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "foodapp_auth",
+            "database": "foodapp_auth",
+            "username": "foodapp"
+        }
+    ]
 }

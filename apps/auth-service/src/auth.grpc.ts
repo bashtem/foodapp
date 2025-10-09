@@ -6,16 +6,20 @@ import { LoginDto, VerifyDto } from "@foodapp/utils/src/dto";
 @Controller()
 export class AuthGrpcController {
   private readonly logger = new Logger(AuthGrpcController.name);
-  constructor(private svc: AuthService) {}
+
+  constructor(private authService: AuthService) {}
 
   @GrpcMethod("AuthService", "Login")
   async login(data: LoginDto) {
-    let res = await this.svc.login(data.email, data.password);
-    return res;
+    const { email, password } = data;
+
+    this.logger.log(`Login request for email: ${email}`);
+    return this.authService.login(email, password);
   }
 
   @GrpcMethod("AuthService", "Verify")
   verify(data: VerifyDto) {
-    return this.svc.verify(data.access_token);
+    this.logger.log(`Verifying token: ${data.access_token}`);
+    return this.authService.verifyToken(data.access_token);
   }
 }

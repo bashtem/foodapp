@@ -1,10 +1,36 @@
-syntax = "proto3"; package user.v1;
-message CreateUserRequest { string email = 1; string password = 2; string role = 3; }
-message GetUserRequest { string id = 1; }
-message FindByEmailRequest { string email = 1; }
-message User { string id = 1; string email = 2; string role = 3; string password_hash = 4; }
+syntax = "proto3";
+
+package user.v1;
+
+// import "role.proto";
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message FindByEmailRequest {
+  string email = 1;
+}
+
+message RegisterUserRequest {
+  string name = 1;
+  string email = 2;
+  string role = 3; // Should match UserRole enum in role.proto
+  string phone = 4;
+  string password = 5;
+}
+
+message UserResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4; // Should match UserRole enum in role.proto
+  string phone = 5;
+  string createdAt = 6;
+}
+
 service UserService {
-  rpc CreateUser(CreateUserRequest) returns (User);
-  rpc GetUser(GetUserRequest) returns (User);
-  rpc FindByEmail(FindByEmailRequest) returns (User);
+  rpc RegisterUser(RegisterUserRequest) returns (UserResponse);
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+  rpc FindByEmail(FindByEmailRequest) returns (UserResponse);
 }

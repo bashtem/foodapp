@@ -1,4 +1,4 @@
-import { UserSvc } from "./user.interface";
-import { AuthSvc } from "./auth.interface";
+import { UserService } from "./user.interface";
+import { AuthService } from "./auth.interface";
 
-export { UserSvc, AuthSvc };
+export { UserService, AuthService };
