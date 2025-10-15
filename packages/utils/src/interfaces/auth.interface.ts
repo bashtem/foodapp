@@ -1,9 +1,17 @@
-import {  LoginDto, VerifyDto } from "../dto";
 import { Observable } from "rxjs";
+import {
+  RefreshTokenDto,
+  RefreshTokenResponseDto,
+  VerifyTokenDto,
+  VerifyTokenResponseDto,
+  AuthDto,
+  AuthResponseDto,
+} from "../dto";
 
 export interface AuthService {
-  login(body: LoginDto): Observable<{ accessToken: string }>;
-  verify(
-    body: VerifyDto
-  ): Observable<{ userId: string; role: string; valid: boolean }>;
+  login(body: AuthDto): Observable<AuthResponseDto>;
+  verifyAuthToken(body: VerifyTokenDto): Observable<VerifyTokenResponseDto>;
+  refreshAccessToken(
+    body: RefreshTokenDto
+  ): Observable<RefreshTokenResponseDto>;
 }

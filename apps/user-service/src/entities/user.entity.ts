@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { UserRole } from "@foodapp/utils/src/enums/role";
+import { UserRole } from "@foodapp/utils/src/enums";
 import { KYC } from "./kyc.entity";
 
 @Entity()

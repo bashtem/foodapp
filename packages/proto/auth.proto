@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package auth.v1;
 
-// import "role.proto";
-
 message LoginRequest {
   string email = 1;
   string password = 2;
@@ -11,6 +9,9 @@ message LoginRequest {
 
 message LoginResponse {
   string accessToken = 1;
+  string refreshToken = 2;
+  string tokenType = 3;
+  string expiresIn = 4;
 }
 
 message VerifyRequest {
@@ -19,11 +20,23 @@ message VerifyRequest {
 
 message VerifyResponse {
   bool valid = 1;
-  string userId = 2;
+  string sub = 2;
   string role = 3;
+  string email = 4;
+}
+
+message RefreshAccessTokenRequest {
+  string refreshToken = 1;
+}
+
+message RefreshAccessTokenResponse {
+  string accessToken = 1;
+  string tokenType = 2;
+  string expiresIn = 3;
 }
 
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
-  rpc Verify(VerifyRequest) returns (VerifyResponse);
+  rpc VerifyAuthToken(VerifyRequest) returns (VerifyResponse);
+  rpc RefreshAccessToken(RefreshAccessTokenRequest) returns (RefreshAccessTokenResponse);
 }

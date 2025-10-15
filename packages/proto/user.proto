@@ -27,6 +27,7 @@ message UserResponse {
   string role = 4; // Should match UserRole enum in role.proto
   string phone = 5;
   string createdAt = 6;
+  string hashedPassword = 7; // For internal use only, should not be exposed in APIs
 }
 
 service UserService {

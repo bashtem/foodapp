@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsString, Matches, MaxLength, MinLength } from "class-validator";
-import { UserRole } from "../enums/role";
+import { UserRole } from "../enums/role.enum";
 
 export class RegisterUserDto {
   @IsEmail()
@@ -26,4 +26,5 @@ export class RegisterUserDto {
 export interface UserResponseDto extends Omit<RegisterUserDto, "password"> {
   id: string;
   createdAt: Date;
+  hashedPassword?: string; // For internal use only, should not be exposed in APIs
 }

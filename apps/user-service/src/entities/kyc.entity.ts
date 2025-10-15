@@ -1,4 +1,4 @@
-import { KYCStatus } from "@foodapp/utils/src/enums/kyc";
+import { KYCStatus } from "@foodapp/utils/src/enums";
 import {
   BaseEntity,
   Column,

@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UserModule } from "./user.module";
-import { Environment } from "@foodapp/utils/src/environment.enum";
+import { Environment } from "@foodapp/utils/src/enums";
 import path from "path";
 
 @Module({

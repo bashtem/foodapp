@@ -1,75 +1,48 @@
-import { Injectable, Inject, OnModuleInit, Logger } from "@nestjs/common";
+import { Injectable, Inject, Logger } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
-import { UserService } from "@foodapp/utils/src/interfaces";
+import { ConfigService } from "@nestjs/config";
+import { VerifyTokenResponseDto } from "@foodapp/utils/src/dto";
 
 @Injectable()
-export class AuthService implements OnModuleInit {
+export class AuthService {
   private readonly logger = new Logger(AuthService.name);
-  private userService!: UserService;
 
   constructor(
     @Inject("USER_GRPC") private client: ClientGrpc,
-    private jwt: JwtService
+    private jwtService: JwtService,
+    private readonly configService: ConfigService
   ) {}
 
-  onModuleInit() {
-    this.userService = this.client.getService<UserService>("UserService");
-  }
-
-  async login(email: string, password: string) {
-    // const user = await firstValueFrom(
-    //   this.userService.FindByEmail({ email }).pipe(timeout(4000))
-    // );
-    // if (!user) throw new Error("Invalid credentials");
-    // const ok = await bcrypt.compare(password, user.password_hash);
-    // if (!ok) throw new Error("Invalid credentials");
-    // const token = this.jwt.sign({
-    //   sub: user.id,
-    //   role: user.role,
-    //   email: user.email,
-    // });
-    const response = { accessToken: `${email}` };
-    return response;
-  }
-
-  generateToken(userId: string, role: string, email: string) {
-    return this.jwt.sign(
-      {
-        sub: userId,
-        role,
-        email,
-      },
-      {
-        secret: process.env.JWT_SECRET || "devsecret",
-        expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-      }
+  async generateToken(userId: string, role: string, email: string) {
+    const payload = { sub: userId, role, email, valid: true };
+    const expiresIn = parseInt(
+      this.configService.get<string>("JWT_EXPIRATION") as string
     );
+
+    this.logger.log(`Generating token for user: ${userId}`);
+
+    const accessToken = await this.jwtService.signAsync(payload);
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+      expiresIn: parseInt(
+        this.configService.get<string>("JWT_REFRESH_EXPIRATION") as string
+      ),
+    });
+
+    return { accessToken, refreshToken, expiresIn };
   }
 
-  verifyToken(token: string) {
-    try {
-      const p = this.jwt.verify(token, {
-        secret: process.env.JWT_SECRET || "devsecret",
-      });
-      return { valid: true, userId: p.sub, role: p.role };
-    } catch {
-      return { valid: false, userId: "", role: "" };
-    }
+  async verifyToken(token: string) {
+    return this.jwtService.verifyAsync<VerifyTokenResponseDto>(token);
   }
 
-  refreshToken(token: string) {
-    try {
-      const p = this.jwt.verify(token, {
-        secret: process.env.JWT_SECRET || "devsecret",
-        ignoreExpiration: true,
-      });
-      const newToken = this.generateToken(p.sub, p.role, p.email);
-      return { accessToken: newToken };
-    } catch {
-      throw new Error("Invalid token");
-    }
+  async verifyRefreshToken(
+    refreshToken: string
+  ): Promise<VerifyTokenResponseDto> {
+    return this.jwtService.verifyAsync<VerifyTokenResponseDto>(refreshToken, {
+      secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+    });
   }
 
   enableMFA(userId: string, method: string) {

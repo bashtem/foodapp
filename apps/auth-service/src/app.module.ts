@@ -4,8 +4,8 @@ import { AuthGrpcController } from "./auth.grpc";
 import { AuthService } from "./auth.service";
 import { JwtModule } from "@nestjs/jwt";
 import path, { join } from "path";
-import { ConfigModule } from "@nestjs/config";
-import { Environment } from "@foodapp/utils/src/environment.enum";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { Environment } from "@foodapp/utils/src/enums";
 
 @Module({
   imports: [
@@ -16,7 +16,21 @@ import { Environment } from "@foodapp/utils/src/environment.enum";
         `../.env.${process.env.NODE_ENV?.trim() || Environment.Development}`
       ),
     }),
-    JwtModule.register({ secret: process.env.JWT_SECRET || "devsecret" }),
+
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>("JWT_SECRET"),
+        signOptions: {
+          expiresIn:
+            parseInt(configService.get<string>("JWT_EXPIRATION") as string) ||
+            "1h",
+        },
+      }),
+    }),
+
     ClientsModule.register([
       {
         name: "USER_GRPC",

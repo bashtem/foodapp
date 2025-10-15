@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./entities/user.entity";
 import * as bcrypt from "bcrypt";
 import { RegisterUserDto } from "@foodapp/utils/src/dto/";
-import { UserRole } from "@foodapp/utils/src/enums/role";
+import { UserRole } from "@foodapp/utils/src/enums";
 
 @Injectable()
 export class UserService {
@@ -12,8 +12,10 @@ export class UserService {
 
   constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
-  findByEmail(email: string) {
-    return this.userRepo.findOne({ where: { email } });
+  async findByEmail(email: string) {
+    const user = await this.userRepo.findOne({ where: { email } });
+    this.logger.log(`findByEmail: ${email} found: ${!!user}`);
+    return user;
   }
 
   findById(id: string) {
@@ -24,18 +26,8 @@ export class UserService {
     return this.userRepo.findOne({ where: { phone } });
   }
 
-  async registerUser(userData: RegisterUserDto) {
+  async create(userData: RegisterUserDto) {
     const { email, name, phone, password, role } = userData;
-
-    const emailExist = await this.findByEmail(email);
-    if (emailExist) {
-      throw new HttpException("Email already in use", HttpStatus.BAD_REQUEST);
-    }
-
-    const phoneExist = await this.findByPhone(phone);
-    if (phoneExist) {
-      throw new HttpException("Phone number already in use", HttpStatus.BAD_REQUEST);
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 

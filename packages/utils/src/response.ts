@@ -1,33 +1,74 @@
-export enum StatusCode {
-  OK = 200,
-  CREATED = 201,
-  NO_CONTENT = 204,
-  BAD_REQUEST = 400,
-  UNAUTHORIZED = 401,
-  FORBIDDEN = 403,
-  NOT_FOUND = 404,
-  CONFLICT = 409,
-  UNPROCESSABLE_ENTITY = 422,
-  INTERNAL_SERVER_ERROR = 500,
+import { HttpStatus } from "@nestjs/common";
+import { status as GrpcStatus } from "@grpc/grpc-js";
+
+export const StatusCodeDescription: Record<number, string> = {
+  [HttpStatus.OK]: "OK",
+  [HttpStatus.CREATED]: "Created",
+  [HttpStatus.NO_CONTENT]: "No Content",
+  [HttpStatus.BAD_REQUEST]: "Bad Request",
+  [HttpStatus.UNAUTHORIZED]: "Unauthorized",
+  [HttpStatus.FORBIDDEN]: "Forbidden",
+  [HttpStatus.NOT_FOUND]: "Not Found",
+  [HttpStatus.CONFLICT]: "Conflict",
+  [HttpStatus.UNPROCESSABLE_ENTITY]: "Unprocessable Entity",
+  [HttpStatus.INTERNAL_SERVER_ERROR]: "Internal Server Error",
+};
+
+export interface ApiResponse<T = any> {
+  statusCode: HttpStatus;
+  description?: string;
+  message: string | String[];
+  data?: T;
+  error?: string | number;
 }
 
-export const StatusCodeDescription: Record<StatusCode, string> = {
-  [StatusCode.OK]: "OK",
-  [StatusCode.CREATED]: "Created",
-  [StatusCode.NO_CONTENT]: "No Content",
-  [StatusCode.BAD_REQUEST]: "Bad Request",
-  [StatusCode.UNAUTHORIZED]: "Unauthorized",
-  [StatusCode.FORBIDDEN]: "Forbidden",
-  [StatusCode.NOT_FOUND]: "Not Found",
-  [StatusCode.CONFLICT]: "Conflict",
-  [StatusCode.UNPROCESSABLE_ENTITY]: "Unprocessable Entity",
-  [StatusCode.INTERNAL_SERVER_ERROR]: "Internal Server Error",
+export interface CreateResponseParams<T = any> {
+  statusCode: HttpStatus;
+  message: string | String[];
+  data?: T;
+  description?: string;
+  error?: string | number;
+}
+
+export function createResponse<T = any>(
+  params: CreateResponseParams<T>
+): ApiResponse<T> {
+  const { statusCode, message, data, description, error } = params;
+  const response: ApiResponse<T> = {
+    statusCode: statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
+    description: description || StatusCodeDescription[statusCode] || "Unknown",
+    message,
+  };
+  if (data) response.data = data;
+  if (error) response.error = error;
+  return response;
+}
+
+export const grpcToHttpStatusMap: Record<number, number> = {
+  [GrpcStatus.OK]: HttpStatus.OK,
+  [GrpcStatus.CANCELLED]: HttpStatus.BAD_REQUEST,
+  [GrpcStatus.UNKNOWN]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [GrpcStatus.INVALID_ARGUMENT]: HttpStatus.BAD_REQUEST,
+  [GrpcStatus.DEADLINE_EXCEEDED]: HttpStatus.REQUEST_TIMEOUT,
+  [GrpcStatus.NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [GrpcStatus.ALREADY_EXISTS]: HttpStatus.BAD_REQUEST,
+  [GrpcStatus.PERMISSION_DENIED]: HttpStatus.FORBIDDEN,
+  [GrpcStatus.RESOURCE_EXHAUSTED]: HttpStatus.TOO_MANY_REQUESTS,
+  [GrpcStatus.FAILED_PRECONDITION]: HttpStatus.PRECONDITION_FAILED,
+  [GrpcStatus.ABORTED]: HttpStatus.CONFLICT,
+  [GrpcStatus.OUT_OF_RANGE]: HttpStatus.BAD_REQUEST,
+  [GrpcStatus.UNIMPLEMENTED]: HttpStatus.NOT_IMPLEMENTED,
+  [GrpcStatus.INTERNAL]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [GrpcStatus.UNAVAILABLE]: HttpStatus.SERVICE_UNAVAILABLE,
+  [GrpcStatus.DATA_LOSS]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [GrpcStatus.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
 };
 
 export enum ApiSuccessCode {
   LOGIN_SUCCESS = "LOGIN_SUCCESS",
   VERIFY_SUCCESS = "VERIFY_SUCCESS",
   REGISTER_SUCCESS = "REGISTER_SUCCESS",
+  REFRESH_SUCCESS = "REFRESH_SUCCESS",
   // Add more as needed
 }
 
@@ -35,49 +76,11 @@ export enum ApiErrorCode {
   LOGIN_FAILED = "LOGIN_FAILED",
   VERIFY_FAILED = "VERIFY_FAILED",
   REGISTER_FAILED = "REGISTER_FAILED",
+  INVALID_CREDENTIALS = "INVALID_CREDENTIALS",
+  USER_NOT_FOUND = "USER_NOT_FOUND",
+  EMAIL_ALREADY_IN_USE = "EMAIL_ALREADY_IN_USE",
+  PHONE_ALREADY_IN_USE = "PHONE_ALREADY_IN_USE",
+  INVALID_TOKEN = "INVALID_TOKEN",
+  INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN",
   // Add more as needed
-}
-
-export interface ApiResponse<T = any> {
-  status: {
-    code: StatusCode;
-    description: string;
-  };
-  message: string;
-  data?: T;
-  error?: {
-    code?: string | number;
-    message?: string;
-    details?: any;
-  };
-}
-
-export interface CreateResponseParams<T = any> {
-  code: StatusCode;
-  message: string;
-  data?: T;
-  description?: string;
-  error?: {
-    code?: string | number;
-    message?: string;
-    details?: any;
-  };
-}
-
-export function createResponse<T = any>(
-  params: CreateResponseParams<T>
-): ApiResponse<T> {
-  const { code, message, data, description, error } = params;
-  const response: ApiResponse<T> = {
-    status: {
-      code: code || StatusCode.INTERNAL_SERVER_ERROR,
-      description: description || StatusCodeDescription[code] || "Unknown",
-    },
-    message,
-    ...(data !== undefined ? { data } : {}),
-  };
-  if (error) {
-    response.error = error;
-  }
-  return response;
 }

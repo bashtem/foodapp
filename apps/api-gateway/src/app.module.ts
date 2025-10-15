@@ -7,7 +7,7 @@ import { RestaurantsController } from "./restaurants/restaurants.controller";
 import { PaymentsController } from "./payments/payments.controller";
 import { OrdersController } from "./orders/orders.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { Environment } from "@foodapp/utils/src/environment.enum";
+import { Environment } from "@foodapp/utils/src/enums";
 import { UsersController } from "./users/users.controller";
 
 @Module({
@@ -84,7 +84,7 @@ import { UsersController } from "./users/users.controller";
             url: config.get<string>("AUTH_GRPC_URL", "localhost:50054"),
             package: "auth.v1",
             protoPath: join(__dirname, "../../..", "packages/proto/auth.proto"),
-            loader: { keepCase: true },
+            loader: { keepCase: true, arrays: true, defaults: true },
           },
         }),
       },
@@ -98,7 +98,7 @@ import { UsersController } from "./users/users.controller";
             url: config.get<string>("USER_GRPC_URL", "localhost:50055"),
             package: "user.v1",
             protoPath: join(__dirname, "../../..", "packages/proto/user.proto"),
-            loader: { keepCase: true },
+            loader: { keepCase: true, arrays: true, defaults: true },
           },
         }),
       },

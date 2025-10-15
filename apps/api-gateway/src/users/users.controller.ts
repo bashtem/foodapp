@@ -1,7 +1,20 @@
 import { RegisterUserDto } from "@foodapp/utils/src/dto";
 import { UserService } from "@foodapp/utils/src/interfaces";
-import { ApiErrorCode, ApiSuccessCode, createResponse, StatusCode } from "@foodapp/utils/src/response";
-import { Body, Controller, HttpException, HttpStatus, Inject, Logger, OnModuleInit, Post } from "@nestjs/common";
+import {
+  ApiSuccessCode,
+  createResponse,
+  grpcToHttpStatusMap,
+} from "@foodapp/utils/src/response";
+import {
+  Body,
+  Controller,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Logger,
+  OnModuleInit,
+  Post,
+} from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
 
@@ -20,22 +33,22 @@ export class UsersController implements OnModuleInit {
   async register(@Body() registerDto: RegisterUserDto) {
     try {
       this.logger.log(`Registering user with email: ${registerDto.email}`);
-      const data = await firstValueFrom(this.userService.registerUser(registerDto));
+      const data = await firstValueFrom(
+        this.userService.registerUser(registerDto)
+      );
+      delete data.hashedPassword; // Remove sensitive info
+      this.logger.log(`User registered with ID: ${data.id}`);
+
       return createResponse({
-        code: StatusCode.CREATED,
+        statusCode: HttpStatus.CREATED,
         message: ApiSuccessCode.REGISTER_SUCCESS,
         data,
       });
     } catch (error: any) {
-      this.logger.error(`Register failed`, error);
-      throw new HttpException(
-        createResponse({
-          code: StatusCode.BAD_REQUEST,
-          message:
-            error.response || error.message || ApiErrorCode.REGISTER_FAILED,
-        }),
-        HttpStatus.BAD_REQUEST
+      this.logger.error(
+        `User Registration failed for email: ${registerDto.email} : ${error.message}`
       );
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 }
