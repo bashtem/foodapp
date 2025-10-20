@@ -14,6 +14,7 @@ import {
   VerifyTokenDto,
   VerifyTokenResponseDto,
 } from "@foodapp/utils/src/dto";
+import { AUTH_SERVICE, USER_GRPC, USER_SERVICE } from "@foodapp/utils/src/constants";
 
 @Controller()
 export class AuthGrpcController {
@@ -21,15 +22,15 @@ export class AuthGrpcController {
   private userService!: UserService;
 
   constructor(
-    @Inject("USER_GRPC") private client: ClientGrpc,
+    @Inject(USER_GRPC) private client: ClientGrpc,
     private authService: AuthService
   ) {}
 
   onModuleInit() {
-    this.userService = this.client.getService<UserService>("UserService");
+    this.userService = this.client.getService<UserService>(USER_SERVICE);
   }
 
-  @GrpcMethod("AuthService", "Login")
+  @GrpcMethod(AUTH_SERVICE, "Login")
   async login(data: AuthDto): Promise<AuthResponseDto> {
     const { email, password } = data;
 
@@ -69,7 +70,7 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod("AuthService", "VerifyAuthToken")
+  @GrpcMethod(AUTH_SERVICE, "VerifyAuthToken")
   async verifyAuthTToken(
     data: VerifyTokenDto
   ): Promise<VerifyTokenResponseDto> {
@@ -89,7 +90,7 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod("AuthService", "RefreshAccessToken")
+  @GrpcMethod(AUTH_SERVICE, "RefreshAccessToken")
   async refreshAccessToken(
     data: RefreshTokenDto
   ): Promise<RefreshTokenResponseDto> {
@@ -115,7 +116,7 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod("AuthService", "Logout")
+  @GrpcMethod(AUTH_SERVICE, "Logout")
   async logout(data: { userId: string }) {
     this.logger.log(`Logging out user: ${data.userId}`);
     // Implement logout logic if needed (e.g., token revocation)

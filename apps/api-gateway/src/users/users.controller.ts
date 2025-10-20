@@ -1,6 +1,7 @@
 import { RegisterUserDto } from "@foodapp/utils/src/dto";
 import { UserService } from "@foodapp/utils/src/interfaces";
 import {
+  ApiErrorCode,
   ApiSuccessCode,
   createResponse,
   grpcToHttpStatusMap,
@@ -8,25 +9,30 @@ import {
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Inject,
   Logger,
   OnModuleInit,
   Post,
+  Req,
+  UseGuards,
 } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
+import { AuthGuard } from "../auth/auth.guard";
+import { USER_GRPC, USER_SERVICE } from "@foodapp/utils/src/constants";
 
 @Controller("users")
 export class UsersController implements OnModuleInit {
   private userService!: UserService;
 
   private readonly logger = new Logger(UsersController.name);
-  constructor(@Inject("USER_GRPC") private readonly client: ClientGrpc) {}
+  constructor(@Inject(USER_GRPC) private readonly client: ClientGrpc) {}
 
   onModuleInit() {
-    this.userService = this.client.getService<UserService>("UserService");
+    this.userService = this.client.getService<UserService>(USER_SERVICE);
   }
 
   @Post("register")
@@ -50,5 +56,19 @@ export class UsersController implements OnModuleInit {
       );
       throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
+  }
+
+  @Get("me")
+  @UseGuards(AuthGuard)
+  async getMe(@Req() req: any) {
+    const user = req.user;
+    if (!user) {
+      throw new HttpException(ApiErrorCode.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+    return createResponse({
+      statusCode: HttpStatus.OK,
+      message: ApiSuccessCode.GET_USER_SUCCESS,
+      data: user,
+    });
   }
 }

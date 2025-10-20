@@ -1,5 +1,4 @@
-import { Injectable, Inject, Logger } from "@nestjs/common";
-import { ClientGrpc } from "@nestjs/microservices";
+import { Injectable, Logger } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { VerifyTokenResponseDto } from "@foodapp/utils/src/dto";
@@ -9,7 +8,6 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    @Inject("USER_GRPC") private client: ClientGrpc,
     private jwtService: JwtService,
     private readonly configService: ConfigService
   ) {}

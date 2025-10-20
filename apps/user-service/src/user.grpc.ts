@@ -7,6 +7,7 @@ import {
 } from "@foodapp/utils/src/dto/user.dto";
 import { status } from "@grpc/grpc-js";
 import { ApiErrorCode } from "@foodapp/utils/src/response";
+import { USER_SERVICE } from "@foodapp/utils/src/constants";
 
 @Controller()
 export class UserGrpcController {
@@ -14,7 +15,7 @@ export class UserGrpcController {
 
   constructor(private userService: UserService) {}
 
-  @GrpcMethod("UserService", "RegisterUser")
+  @GrpcMethod(USER_SERVICE, "RegisterUser")
   async registerUser(data: RegisterUserDto) {
     this.logger.log(`Register User request for email: ${data.email}`);
 
@@ -44,12 +45,12 @@ export class UserGrpcController {
     return userResponse;
   }
 
-  @GrpcMethod("UserService", "GetUser")
+  @GrpcMethod(USER_SERVICE, "GetUser")
   get(id: string) {
     return this.userService.findById(id);
   }
 
-  @GrpcMethod("UserService", "FindByEmail")
+  @GrpcMethod(USER_SERVICE, "FindByEmail")
   async findByEmail(data: { email: string }) {
     this.logger.log(`FindByEmail request for email: ${data.email}`);
     const user = await this.userService.findByEmail(data.email);

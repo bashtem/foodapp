@@ -14,13 +14,14 @@ import {
   createResponse,
   grpcToHttpStatusMap,
 } from "@foodapp/utils/src/response";
+import { AUTH_GRPC } from "@foodapp/utils/src/constants";
 
 @Controller("auth")
 export class AuthController implements OnModuleInit {
   private authService!: AuthService;
 
   private readonly logger = new Logger(AuthController.name);
-  constructor(@Inject("AUTH_GRPC") private readonly client: ClientGrpc) {}
+  constructor(@Inject(AUTH_GRPC) private readonly client: ClientGrpc) {}
 
   onModuleInit() {
     this.authService = this.client.getService<AuthService>("AuthService");

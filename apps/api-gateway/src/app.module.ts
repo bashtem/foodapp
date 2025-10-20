@@ -12,8 +12,7 @@ import { UsersController } from "./users/users.controller";
 
 @Module({
   imports: [
-    // LoggerModule.forRoot(),
-
+    LoggerModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: path.resolve(

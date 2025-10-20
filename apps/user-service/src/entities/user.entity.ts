@@ -11,7 +11,7 @@ import {
 import { UserRole } from "@foodapp/utils/src/enums";
 import { KYC } from "./kyc.entity";
 
-@Entity()
+@Entity("users")
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id!: string;

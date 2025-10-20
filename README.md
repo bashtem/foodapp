@@ -8,6 +8,24 @@
 
 ## Getting Started
 
+Monorepo Structure: This project is organized as a monorepo using Turborepo, which allows for efficient management of multiple NestJS microservices and shared packages.
+
+Environment Configuration: Each microservice has its own .env.production file for production environment variables, ensuring that sensitive information and configurations are managed separately.
+
+Build and Start Scripts: The package.json files for each microservice include scripts for development (dev), building (build), and starting in production mode (start:prod). This standardization simplifies the development and deployment processes.
+
+Shared Utilities: This project utilizes a shared utilities package (@foodapp/utils) to promote code reuse across different microservices.
+
+Important Considerations:
+Port Conflicts: Ensure each NestJS microservice is configured to run on a different port to avoid conflicts when running multiple services concurrently.
+
+Inter-service Communication: For microservices to communicate, we implemented a gRPC communication strategy for sync service to service while we use NATS for async communications and Redis for caching and background jobs.
+
+Shared Code: Utilize the packages/ directory for shared modules, DTOs, or utility functions that can be used by multiple microservices.
+
+Dockerization: For deployment, consider using Docker and Docker Compose to containerize your microservices and manage their dependencies. You can create a dynamic Dockerfile that builds specific microservices based on arguments.
+
+
 ### 1. Clone the Repository
 
 ```bash
