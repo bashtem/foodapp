@@ -1,9 +1,21 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 
 export class AuthDto {
+  @ApiProperty({
+    description: "User's email address",
+    example: "user@example.com",
+    type: String,
+  })
   @IsEmail()
   email!: string;
 
+  @ApiProperty({
+    description: "User's password",
+    example: "SecurePassword123!",
+    type: String,
+    minLength: 8,
+  })
   @IsNotEmpty()
   @MinLength(8)
   password!: string;
@@ -23,6 +35,11 @@ export interface AuthResponseDto {
 }
 
 export class VerifyTokenDto {
+  @ApiProperty({
+    description: "JWT access token to verify",
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    type: String,
+  })
   @IsString()
   accessToken!: string;
 }
@@ -34,6 +51,11 @@ export interface VerifyTokenResponseDto {
 }
 
 export class RefreshTokenDto {
+  @ApiProperty({
+    description: "JWT refresh token to get new access token",
+    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    type: String,
+  })
   @IsString()
   refreshToken!: string;
 }
