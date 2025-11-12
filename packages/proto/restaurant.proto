@@ -2,22 +2,14 @@ syntax = "proto3";
 
 package restaurant.v1;
 
-message ListRestaurantsRequest {
-  bool open_only = 1;
-}
-
-message Restaurant {
-  string id = 1;
-  string name = 2;
-  string status = 3;
-}
-
 message ListRestaurantsResponse {
-  repeated Restaurant items = 1;
+  repeated RestaurantResponse list = 1;
 }
+
+message ListRestaurantsRequest {}
 
 message GetMenuRequest {
-  string restaurant_id = 1;
+  string restaurantId = 1;
 }
 
 message MenuItem {
@@ -30,7 +22,127 @@ message GetMenuResponse {
   repeated MenuItem items = 1;
 }
 
+message CreateMenuItemRequest {
+  string restaurantId = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  bool isAvailable = 5;
+  string category = 6;
+  string imageUrl = 7;
+  int32 preparationTime = 8;
+}
+
+message CreateMenuItemResponse {
+  MenuItem item = 1;
+}
+
+message GetMenuItemRequest {
+  string id = 1;
+}
+
+message GetMenuItemResponse {
+  MenuItem item = 1;
+}
+
+message UpdateMenuItemRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  bool isAvailable = 5;
+  string category = 6;
+  string imageUrl = 7;
+  int32 preparationTime = 8;
+}
+
+message UpdateMenuItemResponse {
+  MenuItem item = 1;
+}
+
+message DeleteMenuItemRequest {
+  string id = 1;
+}
+
+message DeleteMenuItemResponse {
+  bool success = 1;
+}
+
+message FindRestaurantByIdRequest {
+  string id = 1;
+}
+
+message CreateRestaurantRequest{
+  string ownerId = 1;
+  string name = 2;
+  string address = 3;
+  string phone = 4;
+  string website = 5;
+  string description = 6;
+  string email = 7;
+  double lat = 8;
+  double lng = 9;
+}
+
+message CreateRestaurantResponse {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string phone = 4;
+  string website = 5;
+  string description = 6;
+  string email = 7;
+  double lat = 8;
+  double lng = 9;
+}
+
+message UpdateRestaurantRequest {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string phone = 4;
+  string website = 5;
+  string description = 6;
+  string email = 7;
+  double lat = 8;
+  double lng = 9;
+  repeated string cuisines = 10;
+  repeated string hours = 11;
+  string imageUrl = 12;
+  string deliveryPolygon = 13;
+  bool isOpen = 14;
+  bool isActivated = 15;
+  string ownerId = 16;
+}
+
+message RestaurantResponse {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string phone = 4;
+  string website = 5;
+  string description = 6;
+  string email = 7;
+  double lat = 8;
+  double lng = 9;
+  repeated string cuisines = 10;
+  repeated string hours = 11;
+  string imageUrl = 12;
+  string deliveryPolygon = 13;
+  bool isOpen = 14;
+  bool isActivated = 15;
+  string createdAt = 16;
+  string updatedAt = 17;
+}
+
 service RestaurantService {
-  rpc ListRestaurants(ListRestaurantsRequest) returns (ListRestaurantsResponse);
+  rpc ListRestaurants (ListRestaurantsRequest) returns (ListRestaurantsResponse);
   rpc GetMenu(GetMenuRequest) returns (GetMenuResponse);
+  rpc CreateMenuItem(CreateMenuItemRequest) returns (CreateMenuItemResponse);
+  rpc GetMenuItem(GetMenuItemRequest) returns (GetMenuItemResponse);
+  rpc UpdateMenuItem(UpdateMenuItemRequest) returns (UpdateMenuItemResponse);
+  rpc DeleteMenuItem(DeleteMenuItemRequest) returns (DeleteMenuItemResponse);
+  rpc FindRestaurantById(FindRestaurantByIdRequest) returns (RestaurantResponse);
+  rpc CreateRestaurant(CreateRestaurantRequest) returns (CreateRestaurantResponse);
+  rpc UpdateRestaurant(UpdateRestaurantRequest) returns (RestaurantResponse);
 }

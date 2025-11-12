@@ -15,7 +15,7 @@ export class MenuItem extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Column()
+  @Column({ type: "uuid" })
   @Index()
   restaurantId!: string;
 
@@ -28,7 +28,7 @@ export class MenuItem extends BaseEntity {
   @Column("decimal", { precision: 10, scale: 2 })
   price!: number;
 
-  @Column({ default: true })
+  @Column({ type: "boolean", default: true })
   isAvailable!: boolean;
 
   @Column({ type: "text", nullable: true })
@@ -37,7 +37,7 @@ export class MenuItem extends BaseEntity {
   @Column({ type: "text", nullable: true })
   imageUrl?: string | null;
 
-  @Column({ type: "int", default: 0 })
+  @Column({ type: "integer", default: 0 })
   preparationTime!: number;
 
   @CreateDateColumn()

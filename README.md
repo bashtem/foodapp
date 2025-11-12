@@ -25,7 +25,6 @@ Shared Code: Utilize the packages/ directory for shared modules, DTOs, or utilit
 
 Dockerization: For deployment, consider using Docker and Docker Compose to containerize your microservices and manage their dependencies. You can create a dynamic Dockerfile that builds specific microservices based on arguments.
 
-
 ### 1. Clone the Repository
 
 ```bash
@@ -45,6 +44,7 @@ Each service has its own `.env.development` and `.env.production` files in their
 Edit these files as needed for your local or production setup.
 
 Example for `apps/api-gateway/.env.development`:
+
 ```
 PORT=3000
 ORDER_GRPC_URL=localhost:50051
@@ -69,7 +69,9 @@ This will bring up all required infrastructure containers (databases, etc.) usin
 ```bash
 pnpm build
 ```
+
 Or, if using TurboRepo:
+
 ```bash
 pnpm turbo run build
 ```
@@ -107,6 +109,7 @@ By default, the API Gateway runs on [http://localhost:3000](http://localhost:300
 
 - **Stopping Infrastructure:**  
   To stop all Docker containers:
+
   ```bash
   cd infra/_dev
   docker compose down
@@ -121,6 +124,106 @@ By default, the API Gateway runs on [http://localhost:3000](http://localhost:300
 
 - If a service does not pick up the correct environment variables, ensure you are running from the monorepo root and that `NODE_ENV` is set appropriately.
 - If Docker containers fail to start, check Docker Desktop is running and you have sufficient resources allocated.
+
+---
+
+## Commit Guidelines
+
+This project follows the [Conventional Commits](https://www.conventionalcommits.org/) specification to ensure consistent and meaningful commit messages. All commits are automatically validated using Commitlint.
+
+### Commit Message Format
+
+```
+<type>: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Commit Types
+
+| Type       | Description                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------ |
+| `feat`     | A new feature                                                                                          |
+| `fix`      | A bug fix                                                                                              |
+| `docs`     | Documentation only changes                                                                             |
+| `style`    | Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc) |
+| `refactor` | A code change that neither fixes a bug nor adds a feature                                              |
+| `perf`     | A code change that improves performance                                                                |
+| `test`     | Adding missing tests or correcting existing tests                                                      |
+| `chore`    | Changes to the build process or auxiliary tools and libraries                                          |
+| `ci`       | Changes to CI configuration files and scripts                                                          |
+| `build`    | Changes that affect the build system or external dependencies                                          |
+| `revert`   | Reverts a previous commit                                                                              |
+
+### Examples
+
+**Good commit messages:**
+
+```bash
+feat: add user authentication endpoint
+fix: resolve login button validation issue
+docs: update API documentation for orders service
+chore: update dependencies to latest versions
+refactor: simplify user validation logic
+test: add unit tests for payment service
+```
+
+**Bad commit messages:**
+
+```bash
+# Too vague
+fix: bug
+
+# Not following convention
+Update README
+
+# Missing type
+add new feature
+```
+
+### Rules
+
+1. **Type is required**: Every commit must start with a valid type
+2. **Description is required**: Provide a clear, concise description
+3. **Use lowercase**: Types must be in lowercase
+4. **No period**: Don't end the description with a period
+5. **Use imperative mood**: Write as if giving a command (e.g., "add" not "added")
+6. **Keep it short**: Aim for 50 characters or less in the description
+7. **Be specific**: Clearly describe what changed
+
+### Automated Validation
+
+This project uses Husky hooks to automatically:
+
+- **Pre-commit**: Run ESLint and Prettier on staged files
+- **Commit-msg**: Validate commit message format using Commitlint
+
+If your commit message doesn't follow the convention, the commit will be rejected with helpful error messages.
+
+### Tips for Writing Good Commits
+
+1. **Make atomic commits**: Each commit should represent a single logical change
+2. **Write for your future self**: Someone should understand what changed without looking at the code
+3. **Use the body for context**: If the change is complex, add a body explaining why
+4. **Reference issues**: Include issue numbers when applicable (e.g., `fixes #123`)
+
+### Breaking Changes
+
+For breaking changes, add an exclamation mark after the type:
+
+```bash
+feat!: remove deprecated authentication method
+```
+
+Or include `BREAKING CHANGE:` in the footer:
+
+```bash
+feat: update user API response format
+
+BREAKING CHANGE: User API now returns different field names
+```
 
 ---
 

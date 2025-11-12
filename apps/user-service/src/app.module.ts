@@ -25,7 +25,7 @@ import path from "path";
         password: config.get<string>("USER_DB_PASS", "foodapp"),
         database: config.get<string>("USER_DB_NAME", "foodapp"),
         autoLoadEntities: true,
-        synchronize: true,        
+        synchronize: true,
       }),
     }),
     UserModule,

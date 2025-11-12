@@ -1,13 +1,10 @@
 import { Controller, Logger } from "@nestjs/common";
 import { GrpcMethod, RpcException } from "@nestjs/microservices";
 import { UserService } from "./user.service";
-import {
-  RegisterUserDto,
-  UserResponseDto,
-} from "@foodapp/utils/src/dto/user.dto";
+import { RegisterUserDto, UserResponseDto } from "@foodapp/utils/src/dto/user.dto";
 import { status } from "@grpc/grpc-js";
 import { ApiErrorCode } from "@foodapp/utils/src/response";
-import { USER_SERVICE } from "@foodapp/utils/src/constants";
+import { ServiceEnum } from "@foodapp/utils/src/enums";
 
 @Controller()
 export class UserGrpcController {
@@ -15,7 +12,7 @@ export class UserGrpcController {
 
   constructor(private userService: UserService) {}
 
-  @GrpcMethod(USER_SERVICE, "RegisterUser")
+  @GrpcMethod(ServiceEnum.USER_SERVICE, "RegisterUser")
   async registerUser(data: RegisterUserDto) {
     this.logger.log(`Register User request for email: ${data.email}`);
 
@@ -38,19 +35,18 @@ export class UserGrpcController {
     }
 
     const user = await this.userService.create(data);
-
     const userResponse: UserResponseDto = user;
 
     this.logger.log(`User created with ID: ${userResponse.id}`);
     return userResponse;
   }
 
-  @GrpcMethod(USER_SERVICE, "GetUser")
+  @GrpcMethod(ServiceEnum.USER_SERVICE, "GetUser")
   get(id: string) {
     return this.userService.findById(id);
   }
 
-  @GrpcMethod(USER_SERVICE, "FindByEmail")
+  @GrpcMethod(ServiceEnum.USER_SERVICE, "FindByEmail")
   async findByEmail(data: { email: string }) {
     this.logger.log(`FindByEmail request for email: ${data.email}`);
     const user = await this.userService.findByEmail(data.email);
@@ -65,10 +61,13 @@ export class UserGrpcController {
   }
 
   resetPassword(email: string) {
+    this.logger.log(`ResetPassword request for email: ${email}`);
     // Reset password logic here
   }
 
   changePassword(userId: string, newPassword: string) {
+    this.logger.log(`ChangePassword request for user ID: ${userId}`);
+    console.log(newPassword);
     // Change password logic here
   }
 }

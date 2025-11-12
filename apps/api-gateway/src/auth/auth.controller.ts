@@ -1,30 +1,21 @@
-import {
-  HttpCode,
-  HttpException,
-  Logger,
-  OnModuleInit,
-} from "@nestjs/common";
+import { HttpCode, HttpException, Logger, OnModuleInit } from "@nestjs/common";
 import { firstValueFrom } from "rxjs";
 import { Body, Controller, Inject, Post, HttpStatus } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { AuthService } from "@foodapp/utils/src/interfaces";
 import { AuthDto, RefreshTokenDto, VerifyTokenDto } from "@foodapp/utils/src/dto";
-import {
-  ApiSuccessCode,
-  createResponse,
-  grpcToHttpStatusMap,
-} from "@foodapp/utils/src/response";
-import { AUTH_GRPC } from "@foodapp/utils/src/constants";
+import { ApiSuccessCode, createResponse, grpcToHttpStatusMap } from "@foodapp/utils/src/response";
+import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 
 @Controller("auth")
 export class AuthController implements OnModuleInit {
   private authService!: AuthService;
 
   private readonly logger = new Logger(AuthController.name);
-  constructor(@Inject(AUTH_GRPC) private readonly client: ClientGrpc) {}
+  constructor(@Inject(ServiceGrpcEnum.AUTH_GRPC) private readonly client: ClientGrpc) {}
 
   onModuleInit() {
-    this.authService = this.client.getService<AuthService>("AuthService");
+    this.authService = this.client.getService<AuthService>(ServiceEnum.AUTH_SERVICE);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -41,9 +32,7 @@ export class AuthController implements OnModuleInit {
         data,
       });
     } catch (error: any) {
-      this.logger.error(
-        `Login failed for email: ${authDto.email}: ${error.message}`
-      );
+      this.logger.error(`Login failed for email: ${authDto.email}: ${error.message}`);
       throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }

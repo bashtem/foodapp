@@ -7,7 +7,7 @@ import { RestaurantsController } from "./restaurants/restaurants.controller";
 import { PaymentsController } from "./payments/payments.controller";
 import { OrdersController } from "./orders/orders.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { Environment } from "@foodapp/utils/src/enums";
+import { Environment, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 import { UsersController } from "./users/users.controller";
 
 @Module({
@@ -22,7 +22,7 @@ import { UsersController } from "./users/users.controller";
     }),
     ClientsModule.registerAsync([
       {
-        name: "ORDER_GRPC",
+        name: ServiceGrpcEnum.ORDER_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -30,16 +30,12 @@ import { UsersController } from "./users/users.controller";
           options: {
             url: config.get<string>("ORDER_GRPC_URL", "localhost:50051"),
             package: "order.v1",
-            protoPath: join(
-              __dirname,
-              "../../..",
-              "packages/proto/order.proto"
-            ),
+            protoPath: join(__dirname, "../../..", "packages/proto/order.proto"),
           },
         }),
       },
       {
-        name: "RESTAURANT_GRPC",
+        name: ServiceGrpcEnum.RESTAURANT_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -47,16 +43,12 @@ import { UsersController } from "./users/users.controller";
           options: {
             url: config.get<string>("RESTAURANT_GRPC_URL", "localhost:50052"),
             package: "restaurant.v1",
-            protoPath: join(
-              __dirname,
-              "../../..",
-              "packages/proto/restaurant.proto"
-            ),
+            protoPath: join(__dirname, "../../..", "packages/proto/restaurant.proto"),
           },
         }),
       },
       {
-        name: "PAYMENT_GRPC",
+        name: ServiceGrpcEnum.PAYMENT_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -64,17 +56,13 @@ import { UsersController } from "./users/users.controller";
           options: {
             url: config.get<string>("PAYMENT_GRPC_URL", "localhost:50053"),
             package: "payment.v1",
-            protoPath: join(
-              __dirname,
-              "../../..",
-              "packages/proto/payment.proto"
-            ),
+            protoPath: join(__dirname, "../../..", "packages/proto/payment.proto"),
             loader: { keepCase: true },
           },
         }),
       },
       {
-        name: "AUTH_GRPC",
+        name: ServiceGrpcEnum.AUTH_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -88,7 +76,7 @@ import { UsersController } from "./users/users.controller";
         }),
       },
       {
-        name: "USER_GRPC",
+        name: ServiceGrpcEnum.USER_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({

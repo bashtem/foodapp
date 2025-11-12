@@ -22,27 +22,27 @@ import {
 import { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
 import { AuthGuard } from "../auth/auth.guard";
-import { USER_GRPC, USER_SERVICE } from "@foodapp/utils/src/constants";
+import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 
 @Controller("users")
 export class UsersController implements OnModuleInit {
   private userService!: UserService;
 
   private readonly logger = new Logger(UsersController.name);
-  constructor(@Inject(USER_GRPC) private readonly client: ClientGrpc) {}
+  constructor(@Inject(ServiceGrpcEnum.USER_GRPC) private readonly client: ClientGrpc) {}
 
   onModuleInit() {
-    this.userService = this.client.getService<UserService>(USER_SERVICE);
+    this.userService = this.client.getService<UserService>(ServiceEnum.USER_SERVICE);
   }
 
   @Post("register")
   async register(@Body() registerDto: RegisterUserDto) {
     try {
       this.logger.log(`Registering user with email: ${registerDto.email}`);
-      const data = await firstValueFrom(
-        this.userService.registerUser(registerDto)
-      );
+
+      const data = await firstValueFrom(this.userService.registerUser(registerDto));
       delete data.hashedPassword; // Remove sensitive info
+
       this.logger.log(`User registered with ID: ${data.id}`);
 
       return createResponse({

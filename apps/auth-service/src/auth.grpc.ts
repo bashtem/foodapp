@@ -14,7 +14,7 @@ import {
   VerifyTokenDto,
   VerifyTokenResponseDto,
 } from "@foodapp/utils/src/dto";
-import { AUTH_SERVICE, USER_GRPC, USER_SERVICE } from "@foodapp/utils/src/constants";
+import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 
 @Controller()
 export class AuthGrpcController {
@@ -22,23 +22,21 @@ export class AuthGrpcController {
   private userService!: UserService;
 
   constructor(
-    @Inject(USER_GRPC) private client: ClientGrpc,
+    @Inject(ServiceGrpcEnum.USER_GRPC) private userClient: ClientGrpc,
     private authService: AuthService
   ) {}
 
   onModuleInit() {
-    this.userService = this.client.getService<UserService>(USER_SERVICE);
+    this.userService = this.userClient.getService<UserService>(ServiceEnum.USER_SERVICE);
   }
 
-  @GrpcMethod(AUTH_SERVICE, "Login")
+  @GrpcMethod(ServiceEnum.AUTH_SERVICE, "Login")
   async login(data: AuthDto): Promise<AuthResponseDto> {
     const { email, password } = data;
 
     this.logger.log(`Login request for email: ${email}`);
     try {
-      const user = await firstValueFrom(
-        this.userService.findByEmail({ email })
-      );
+      const user = await firstValueFrom(this.userService.findByEmail({ email }));
 
       const ok = await bcrypt.compare(password, user.hashedPassword as string);
 
@@ -48,8 +46,11 @@ export class AuthGrpcController {
           message: ApiErrorCode.INVALID_CREDENTIALS,
         });
 
-      const { accessToken, refreshToken, expiresIn } =
-        await this.authService.generateToken(user.id, user.role, user.email);
+      const { accessToken, refreshToken, expiresIn } = await this.authService.generateToken(
+        user.id,
+        user.role,
+        user.email
+      );
 
       this.logger.log(`Generated token for user: ${user.id}, email: ${email}`);
       return {
@@ -70,10 +71,8 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod(AUTH_SERVICE, "VerifyAuthToken")
-  async verifyAuthTToken(
-    data: VerifyTokenDto
-  ): Promise<VerifyTokenResponseDto> {
+  @GrpcMethod(ServiceEnum.AUTH_SERVICE, "VerifyAuthToken")
+  async verifyAuthToken(data: VerifyTokenDto): Promise<VerifyTokenResponseDto> {
     this.logger.log(`Verifying token: ${data.accessToken}`);
 
     try {
@@ -90,18 +89,14 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod(AUTH_SERVICE, "RefreshAccessToken")
-  async refreshAccessToken(
-    data: RefreshTokenDto
-  ): Promise<RefreshTokenResponseDto> {
-    this.logger.log(`Refreshing access token using refresh token.`);
+  @GrpcMethod(ServiceEnum.AUTH_SERVICE, "RefreshAccessToken")
+  async refreshAccessToken(data: RefreshTokenDto): Promise<RefreshTokenResponseDto> {
+    this.logger.log("Refreshing access token using refresh token.");
     try {
-      const { email, sub, role } = await this.authService.verifyRefreshToken(
-        data.refreshToken
-      );
+      const { email, sub, role } = await this.authService.verifyRefreshToken(data.refreshToken);
       const payload = await this.authService.generateToken(sub, role, email);
 
-      this.logger.log(`Access token refreshed successfully.`);
+      this.logger.log("Access token refreshed successfully.");
       return {
         accessToken: payload.accessToken,
         tokenType: "Bearer",
@@ -116,7 +111,7 @@ export class AuthGrpcController {
     }
   }
 
-  @GrpcMethod(AUTH_SERVICE, "Logout")
+  @GrpcMethod(ServiceEnum.AUTH_SERVICE, "Logout")
   async logout(data: { userId: string }) {
     this.logger.log(`Logging out user: ${data.userId}`);
     // Implement logout logic if needed (e.g., token revocation)

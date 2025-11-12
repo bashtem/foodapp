@@ -17,17 +17,17 @@ export class User extends BaseEntity {
   id!: string;
 
   @Index({ unique: true })
-  @Column()
+  @Column({ type: "varchar", length: 255 })
   email!: string;
 
-  @Column()
+  @Column({ type: "varchar", length: 100 })
   name!: string;
 
   @Index({ unique: true })
-  @Column()
+  @Column({ type: "varchar", length: 15 })
   phone!: string;
 
-  @Column()
+  @Column({ type: "varchar", length: 255 })
   hashedPassword!: string;
 
   @Column({ type: "enum", enum: UserRole, default: UserRole.CUSTOMER })

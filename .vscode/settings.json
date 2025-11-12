@@ -36,6 +36,17 @@
             "name": "foodapp_auth",
             "database": "foodapp_auth",
             "username": "foodapp"
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "foodapp_restaurant",
+            "username": "foodapp",
+            "database": "foodapp_restaurant"
         }
     ]
 }

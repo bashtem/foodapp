@@ -17,22 +17,20 @@ export const StatusCodeDescription: Record<number, string> = {
 export interface ApiResponse<T = any> {
   statusCode: HttpStatus;
   description?: string;
-  message: string | String[];
+  message: string | string[];
   data?: T;
   error?: string | number;
 }
 
 export interface CreateResponseParams<T = any> {
   statusCode: HttpStatus;
-  message: string | String[];
+  message: string | string[];
   data?: T;
   description?: string;
   error?: string | number;
 }
 
-export function createResponse<T = any>(
-  params: CreateResponseParams<T>
-): ApiResponse<T> {
+export function createResponse<T = any>(params: CreateResponseParams<T>): ApiResponse<T> {
   const { statusCode, message, data, description, error } = params;
   const response: ApiResponse<T> = {
     statusCode: statusCode || HttpStatus.INTERNAL_SERVER_ERROR,
@@ -70,6 +68,12 @@ export enum ApiSuccessCode {
   REGISTER_SUCCESS = "REGISTER_SUCCESS",
   REFRESH_SUCCESS = "REFRESH_SUCCESS",
   GET_USER_SUCCESS = "GET_USER_SUCCESS",
+  UPDATE_USER_SUCCESS = "UPDATE_USER_SUCCESS",
+  CREATE_RESTAURANT_SUCCESS = "CREATE_RESTAURANT_SUCCESS",
+  UPDATE_RESTAURANT_SUCCESS = "UPDATE_RESTAURANT_SUCCESS",
+  DELETE_RESTAURANT_SUCCESS = "DELETE_RESTAURANT_SUCCESS",
+  LIST_RESTAURANTS_SUCCESS = "LIST_RESTAURANTS_SUCCESS",
+  GET_RESTAURANT_SUCCESS = "GET_RESTAURANT_SUCCESS",
   // Add more as needed
 }
 
@@ -84,5 +88,9 @@ export enum ApiErrorCode {
   INVALID_TOKEN = "INVALID_TOKEN",
   INVALID_REFRESH_TOKEN = "INVALID_REFRESH_TOKEN",
   MISSING_AUTH_TOKEN = "MISSING_AUTH_TOKEN",
+  RESTAURANT_NAME_ALREADY_EXISTS = "RESTAURANT_NAME_ALREADY_EXISTS",
+  RESTAURANT_NOT_FOUND = "RESTAURANT_NOT_FOUND",
+  MENU_ITEM_NOT_FOUND = "MENU_ITEM_NOT_FOUND",
+  INVALID_ID = "INVALID_ID",
   // Add more as needed
 }
