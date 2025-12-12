@@ -3,6 +3,11 @@ import {
   CreateRestaurantGrpcDto,
   UpdateRestaurantDto,
 } from "@foodapp/utils/src/dto";
+import {
+  CreateMenuItemDto,
+  CreateMenuItemGrpcDto,
+  UpdateMenuItemGrpcDto,
+} from "@foodapp/utils/src/dto";
 import { RestaurantService, UserRequest } from "@foodapp/utils/src/interfaces";
 import { ApiSuccessCode, createResponse, grpcToHttpStatusMap } from "@foodapp/utils/src/response";
 import {
@@ -17,17 +22,16 @@ import {
   HttpException,
   HttpStatus,
   Req,
-  UseGuards,
   Patch,
   ParseUUIDPipe,
+  Delete,
 } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
-import { AuthGuard } from "../auth/auth.guard";
 import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 import { UpdateRestaurantGrpcDto } from "@foodapp/utils/src/dto/restaurant.dto";
 
-@UseGuards(AuthGuard)
+// @UseGuards(AuthGuard) FIXME:
 @Controller("restaurants")
 export class RestaurantsController implements OnModuleInit {
   private restaurantService!: RestaurantService;
@@ -45,12 +49,12 @@ export class RestaurantsController implements OnModuleInit {
   async list() {
     try {
       this.logger.log("Listing restaurants");
-      const restaurant = await firstValueFrom(this.restaurantService.listRestaurants({}));
+      const restaurants = await firstValueFrom(this.restaurantService.listRestaurants({}));
 
       return createResponse({
         statusCode: HttpStatus.OK,
         message: ApiSuccessCode.LIST_RESTAURANTS_SUCCESS,
-        data: restaurant.list,
+        data: restaurants,
       });
     } catch (error: any) {
       this.logger.error(`Failed to list restaurants: ${error.message}`);
@@ -75,23 +79,11 @@ export class RestaurantsController implements OnModuleInit {
     }
   }
 
-  @Get(":id/menu")
-  async menu(@Param("id", ParseUUIDPipe) id: string) {
-    try {
-      const menu = await firstValueFrom(this.restaurantService.getMenu({ restaurantId: id }));
-      return createResponse({
-        statusCode: HttpStatus.OK,
-        message: ApiSuccessCode.GET_RESTAURANT_SUCCESS,
-        data: menu,
-      });
-    } catch (error: any) {
-      this.logger.error(`Failed to get restaurant menu: ${error.message}`);
-      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
-    }
-  }
-
-  @Post()
-  async create(@Body() createRestaurantDto: CreateRestaurantDto, @Req() req: UserRequest) {
+  @Post("/")
+  async createRestaurant(
+    @Body() createRestaurantDto: CreateRestaurantDto,
+    @Req() req: UserRequest
+  ) {
     try {
       this.logger.log(`Creating restaurant: ${createRestaurantDto.name}`);
       const createRestaurantGrpcDto: CreateRestaurantGrpcDto = {
@@ -143,6 +135,111 @@ export class RestaurantsController implements OnModuleInit {
       });
     } catch (error: any) {
       this.logger.error(`Failed to update restaurant: ${error.message}`);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
+    }
+  }
+
+  @Post(":id/menu")
+  async createMenuItem(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Body() createMenuItemDto: CreateMenuItemDto
+  ) {
+    try {
+      const grpcDto: CreateMenuItemGrpcDto = { ...createMenuItemDto, restaurantId: id };
+
+      this.logger.log(`Creating menu item for restaurant ID: ${id}`);
+      const menuItem = await firstValueFrom(this.restaurantService.createMenuItem(grpcDto));
+
+      this.logger.log(`Menu item created with ID: ${menuItem.id} for restaurant ID: ${id}`);
+      return createResponse({
+        statusCode: HttpStatus.CREATED,
+        message: ApiSuccessCode.CREATE_MENU_ITEM_SUCCESS,
+        data: menuItem,
+      });
+    } catch (error: any) {
+      this.logger.error(`Failed to create menu item: ${error.message}`);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
+    }
+  }
+
+  @Get(":id/menu")
+  async menu(@Param("id", ParseUUIDPipe) id: string) {
+    try {
+      const menus = await firstValueFrom(this.restaurantService.getMenu({ restaurantId: id }));
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.GET_RESTAURANT_MENU_SUCCESS,
+        data: menus,
+      });
+    } catch (error: any) {
+      this.logger.error(`Failed to get restaurant menu: ${error.message}`);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
+    }
+  }
+
+  @Get(":id/menu/:menuId")
+  async getMenuItem(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("menuId", ParseUUIDPipe) menuId: string
+  ) {
+    try {
+      const menuItem = await firstValueFrom(
+        this.restaurantService.getMenuItem({ id: menuId, restaurantId: id })
+      );
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.GET_MENU_ITEM_SUCCESS,
+        data: menuItem,
+      });
+    } catch (error: any) {
+      this.logger.error(`Failed to get menu item: ${error.message}`);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
+    }
+  }
+
+  @Patch(":id/menu/:menuId")
+  async updateMenuItem(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("menuId", ParseUUIDPipe) menuId: string,
+    @Body() updateMenuItemDto: Partial<CreateMenuItemDto>
+  ) {
+    try {
+      const grpcDto: Partial<UpdateMenuItemGrpcDto> = {
+        id: menuId,
+        restaurantId: id,
+        ...updateMenuItemDto,
+      };
+      this.logger.log(`Updating menu item ID: ${menuId} for restaurant ID: ${id}`);
+      const menuItem = await firstValueFrom(this.restaurantService.updateMenuItem(grpcDto));
+
+      this.logger.log(`Menu item updated with ID: ${menuItem.id} for restaurant ID: ${id}`);
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.UPDATE_MENU_ITEM_SUCCESS,
+        data: menuItem,
+      });
+    } catch (error: any) {
+      this.logger.error(`Failed to update menu item: ${error.message}`);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
+    }
+  }
+
+  @Delete(":id/menu/:menuId")
+  async deleteMenuItem(
+    @Param("id", ParseUUIDPipe) id: string,
+    @Param("menuId", ParseUUIDPipe) menuId: string
+  ) {
+    try {
+      this.logger.log(`Deleting menu item ID: ${menuId} from restaurant ID: ${id}`);
+      await firstValueFrom(this.restaurantService.deleteMenuItem({ id: menuId, restaurantId: id }));
+
+      this.logger.log(`Menu item deleted with ID: ${menuId} from restaurant ID: ${id}`);
+      return createResponse({
+        statusCode: HttpStatus.NO_CONTENT,
+        message: ApiSuccessCode.DELETE_MENU_ITEM_SUCCESS,
+      });
+    } catch (error: any) {
+      this.logger.error(`Failed to delete menu item: ${error.message}`);
       throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }

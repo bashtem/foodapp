@@ -49,9 +49,9 @@ export class RestaurantService {
     return this.restaurantRepo.delete(id);
   }
 
-  /* Menu item CRUD */
   async createMenuItem(menuData: Partial<MenuItem>) {
-    const menuItem = this.menuRepo.create(menuData as any);
+    const menuItem = this.menuRepo.create(menuData);
+
     this.logger.log(`Creating menu item: ${menuItem}`);
     return this.menuRepo.save(menuItem);
   }
@@ -60,9 +60,13 @@ export class RestaurantService {
     return this.menuRepo.findOne({ where: { id } });
   }
 
+  async getMenuItemByRestaurant(restaurantId: string, id: string) {
+    return this.menuRepo.findOne({ where: { id, restaurantId } });
+  }
+
   async updateMenuItem(id: string, updateData: Partial<MenuItem>) {
     this.logger.log(`Updating menu item ID: ${id}`);
-    return this.menuRepo.save({ id, ...updateData } as any);
+    return this.menuRepo.save({ id, ...updateData });
   }
 
   async deleteMenuItem(id: string) {

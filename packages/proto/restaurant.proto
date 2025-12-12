@@ -3,7 +3,7 @@ syntax = "proto3";
 package restaurant.v1;
 
 message ListRestaurantsResponse {
-  repeated RestaurantResponse list = 1;
+  repeated RestaurantResponse records = 1;
 }
 
 message ListRestaurantsRequest {}
@@ -12,14 +12,22 @@ message GetMenuRequest {
   string restaurantId = 1;
 }
 
-message MenuItem {
-  string id = 1;
-  string name = 2;
-  double price = 3;
+message GetMenuResponse {
+  repeated MenuItemResponse records = 1;
 }
 
-message GetMenuResponse {
-  repeated MenuItem items = 1;
+message MenuItemResponse {
+  string id = 1;
+  string restaurantId = 2;
+  string name = 3;
+  string description = 4;
+  double price = 5;
+  bool isAvailable = 6;
+  string category = 7;
+  string imageUrl = 8;
+  int32 preparationTime = 9;
+  string createdAt = 10;
+  string updatedAt = 11;
 }
 
 message CreateMenuItemRequest {
@@ -33,31 +41,21 @@ message CreateMenuItemRequest {
   int32 preparationTime = 8;
 }
 
-message CreateMenuItemResponse {
-  MenuItem item = 1;
-}
-
 message GetMenuItemRequest {
   string id = 1;
-}
-
-message GetMenuItemResponse {
-  MenuItem item = 1;
+  string restaurantId = 2;
 }
 
 message UpdateMenuItemRequest {
   string id = 1;
-  string name = 2;
-  string description = 3;
-  double price = 4;
-  bool isAvailable = 5;
-  string category = 6;
-  string imageUrl = 7;
-  int32 preparationTime = 8;
-}
-
-message UpdateMenuItemResponse {
-  MenuItem item = 1;
+  string restaurantId = 2;
+  string name = 3;
+  string description = 4;
+  double price = 5;
+  bool isAvailable = 6;
+  string category = 7;
+  string imageUrl = 8;
+  int32 preparationTime = 9;
 }
 
 message DeleteMenuItemRequest {
@@ -138,9 +136,9 @@ message RestaurantResponse {
 service RestaurantService {
   rpc ListRestaurants (ListRestaurantsRequest) returns (ListRestaurantsResponse);
   rpc GetMenu(GetMenuRequest) returns (GetMenuResponse);
-  rpc CreateMenuItem(CreateMenuItemRequest) returns (CreateMenuItemResponse);
-  rpc GetMenuItem(GetMenuItemRequest) returns (GetMenuItemResponse);
-  rpc UpdateMenuItem(UpdateMenuItemRequest) returns (UpdateMenuItemResponse);
+  rpc CreateMenuItem(CreateMenuItemRequest) returns (MenuItemResponse);
+  rpc GetMenuItem(GetMenuItemRequest) returns (MenuItemResponse);
+  rpc UpdateMenuItem(UpdateMenuItemRequest) returns (MenuItemResponse);
   rpc DeleteMenuItem(DeleteMenuItemRequest) returns (DeleteMenuItemResponse);
   rpc FindRestaurantById(FindRestaurantByIdRequest) returns (RestaurantResponse);
   rpc CreateRestaurant(CreateRestaurantRequest) returns (CreateRestaurantResponse);

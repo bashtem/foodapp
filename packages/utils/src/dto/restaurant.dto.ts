@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsLatitude,
   IsLongitude,
+  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -319,7 +320,7 @@ export class CreateMenuItemDto {
   description?: string;
 
   @ApiProperty({ description: "Price in main currency unit", example: 9.99 })
-  // using number validation; repository stores as decimal
+  @IsNumber()
   price!: number;
 
   @ApiProperty({ description: "Is the item available", required: false })
@@ -347,37 +348,22 @@ export class CreateMenuItemGrpcDto extends CreateMenuItemDto {
   restaurantId!: string;
 }
 
-export class UpdateMenuItemGrpcDto {
+export class GetMenuItemGrpcDto {
+  @ApiProperty({ description: "Menu item ID", example: "550e8400-e29b-41d4-a716-446655440000" })
   @IsUUID()
   id!: string;
 
-  @IsOptional()
-  @IsString()
-  @MaxLength(255)
-  name?: string;
-
-  @IsOptional()
-  @IsString()
-  description?: string;
-
-  @IsOptional()
-  price?: number;
-
-  @IsOptional()
-  @IsBoolean()
-  isAvailable?: boolean;
-
-  @IsOptional()
-  @IsString()
-  category?: string;
-
-  @IsOptional()
-  @IsUrl()
-  imageUrl?: string;
-
-  @IsOptional()
-  preparationTime?: number;
+  @ApiProperty({ description: "Restaurant ID", example: "660e8400-e29b-41d4-a716-446655440000" })
+  @IsUUID()
+  restaurantId!: string;
 }
+
+export class UpdateMenuItemGrpcDto extends CreateMenuItemGrpcDto {
+  @IsUUID()
+  id!: string;
+}
+
+export class DeleteMenuItemGrpcDto extends GetMenuItemGrpcDto {}
 
 export interface MenuItemResponseDto {
   id: string;

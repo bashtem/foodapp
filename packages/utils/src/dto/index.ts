@@ -17,6 +17,8 @@ import {
   CreateMenuItemGrpcDto,
   UpdateMenuItemGrpcDto,
   MenuItemResponseDto,
+  GetMenuItemGrpcDto,
+  DeleteMenuItemGrpcDto,
 } from "./restaurant.dto";
 
 export {
@@ -37,4 +39,6 @@ export {
   CreateMenuItemGrpcDto,
   UpdateMenuItemGrpcDto,
   MenuItemResponseDto,
+  GetMenuItemGrpcDto,
+  DeleteMenuItemGrpcDto,
 };

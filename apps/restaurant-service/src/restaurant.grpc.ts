@@ -3,6 +3,7 @@ import { GrpcMethod, RpcException } from "@nestjs/microservices";
 import { RestaurantService } from "./restaurant.service";
 import {
   CreateRestaurantGrpcDto,
+  GetMenuItemGrpcDto,
   RestaurantResponseDto,
   UpdateRestaurantGrpcDto,
 } from "@foodapp/utils/src/dto";
@@ -25,15 +26,7 @@ export class RestaurantGrpcController {
   async list() {
     this.logger.log("Listing restaurants");
     const restaurants = await this.restaurantService.list();
-    return { list: restaurants } as any;
-  }
-
-  @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "GetMenu")
-  async menu(data: any) {
-    const restaurantId = data.restaurant_id || data.restaurantId;
-    this.logger.log(`Getting menu for restaurant ID: ${restaurantId}`);
-
-    return { items: await this.restaurantService.getMenu(restaurantId) } as any;
+    return { records: restaurants };
   }
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "FindRestaurantById")
@@ -76,7 +69,7 @@ export class RestaurantGrpcController {
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "UpdateRestaurant")
   async update(data: UpdateRestaurantGrpcDto) {
-    this.logger.log(`Updating restaurant ID: ${data.id} with data: ${JSON.stringify(data)}`);
+    this.logger.log(`Updating restaurant ID: ${data.id} }`);
 
     const restaurant = await this.restaurantService.findById(data.id);
     if (!restaurant) {
@@ -107,7 +100,7 @@ export class RestaurantGrpcController {
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "CreateMenuItem")
   async createMenuItem(data: CreateMenuItemGrpcDto) {
-    const restaurantId = (data as any).restaurant_id || data.restaurantId || data.restaurantId;
+    const restaurantId = data.restaurantId;
     this.logger.log(`Creating menu item for restaurant ID: ${restaurantId}`);
 
     const restaurant = await this.restaurantService.findById(restaurantId);
@@ -119,61 +112,66 @@ export class RestaurantGrpcController {
       });
     }
 
-    const menuItem = await this.restaurantService.createMenuItem({
-      restaurantId,
-      name: data.name,
-      description: (data as any).description,
-      price: data.price,
-      isAvailable: (data as any).isAvailable,
-      category: (data as any).category,
-      imageUrl: (data as any).imageUrl,
-      preparationTime: (data as any).preparationTime,
-    } as any);
+    const menuItem = await this.restaurantService.createMenuItem(data);
+    const menuItemResponse: MenuItemResponseDto = menuItem;
 
-    const response: MenuItemResponseDto = menuItem as any;
-    return { item: response } as any;
+    this.logger.log(`Menu item created with ID: ${menuItem.id}`);
+    return menuItemResponse;
+  }
+
+  @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "GetMenu")
+  async menu(data: { restaurantId: string }) {
+    this.logger.log(`Getting menu for restaurant ID: ${data.restaurantId}`);
+
+    const menu = await this.restaurantService.getMenu(data.restaurantId);
+    return { records: menu };
   }
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "GetMenuItem")
-  async getMenuItem(data: { id: string }) {
-    const id = (data as any).id || (data as any).menu_item_id || (data as any).menuItemId;
-    this.logger.log(`Getting menu item ID: ${id}`);
+  async getMenuItem(data: GetMenuItemGrpcDto) {
+    const { id, restaurantId } = data;
+    this.logger.log(`Getting menu item ID: ${id} for restaurant ID: ${restaurantId}`);
 
-    const menuItem = await this.restaurantService.getMenuItem(id);
+    const menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
     if (!menuItem) {
-      this.logger.warn(`Menu item not found with ID: ${id}`);
+      this.logger.warn(`Menu item not found with ID: ${id} for restaurant ${restaurantId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.MENU_ITEM_NOT_FOUND });
     }
-    return { item: menuItem } as any;
+    return menuItem;
   }
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "UpdateMenuItem")
   async updateMenuItem(data: UpdateMenuItemGrpcDto) {
-    const id = (data as any).id;
-    this.logger.log(`Updating menu item ID: ${id}`);
+    const { id, restaurantId } = data;
+    this.logger.log(`Updating menu item ID: ${id} for restaurant ID: ${restaurantId}`);
 
-    const menuItem = await this.restaurantService.getMenuItem(id);
+    const menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
     if (!menuItem) {
-      this.logger.warn(`Menu item not found with ID: ${id}`);
+      this.logger.warn(`Menu item not found with ID: ${id} for restaurant ${restaurantId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.MENU_ITEM_NOT_FOUND });
     }
 
-    const updated = await this.restaurantService.updateMenuItem(id, data as any);
-    return { item: updated } as any;
+    const updateData: Omit<UpdateMenuItemGrpcDto, "id" | "restaurantId"> = data;
+    const updatedMenuItem = await this.restaurantService.updateMenuItem(id, updateData);
+
+    this.logger.log(
+      `Menu item updated with ID: ${updatedMenuItem.id} for restaurant ID: ${restaurantId} data: ${JSON.stringify(updateData)}`
+    );
+    return updatedMenuItem;
   }
 
   @GrpcMethod(ServiceEnum.RESTAURANT_SERVICE, "DeleteMenuItem")
-  async deleteMenuItem(data: { id: string }) {
-    const id = (data as any).id;
+  async deleteMenuItem(data: GetMenuItemGrpcDto) {
+    const { id, restaurantId } = data;
     this.logger.log(`Deleting menu item ID: ${id}`);
 
-    const menuItem = await this.restaurantService.getMenuItem(id);
+    const menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
     if (!menuItem) {
-      this.logger.warn(`Menu item not found with ID: ${id}`);
+      this.logger.warn(`Menu item not found with ID: ${id} for restaurant ${restaurantId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.MENU_ITEM_NOT_FOUND });
     }
 
     await this.restaurantService.deleteMenuItem(id);
-    return { success: true } as any;
+    return true;
   }
 }
