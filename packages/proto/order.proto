@@ -17,6 +17,48 @@ message GetOrderRequest {
   string id = 1;
 }
 
+message GetCartRequest {
+  string userId = 1;
+}
+
+message CartItem {
+  string id = 1;
+  string menu_item_id = 2;
+  int32 quantity = 3;
+}
+
+message Cart {
+  string id = 1;
+  string userId = 2;
+  repeated CartItem items = 3;
+}
+
+message AddCartItemRequest {
+  string userId = 1;
+  string menuItemId = 2;
+  string restaurantId = 3;
+  int32 quantity = 4;
+}
+
+message UpdateCartItemRequest {
+  string userId = 1;
+  string itemId = 2;
+  int32 quantity = 3;
+}
+
+message RemoveCartItemRequest {
+  string userId = 1;
+  string itemId = 2;
+}
+
+message ClearCartRequest {
+  string userId = 1;
+}
+
+message CheckoutCartRequest {
+  string userId = 1;
+}
+
 message UpdateStatusRequest {
   string id = 1;
   string status = 2;
@@ -34,4 +76,10 @@ service OrderService {
   rpc CreateOrder(CreateOrderRequest) returns (Order);
   rpc GetOrder(GetOrderRequest) returns (Order);
   rpc UpdateStatus(UpdateStatusRequest) returns (Order);
+  rpc GetCart(GetCartRequest) returns (Cart);
+  rpc AddCartItem(AddCartItemRequest) returns (Cart);
+  rpc UpdateCartItem(UpdateCartItemRequest) returns (Cart);
+  rpc RemoveCartItem(RemoveCartItemRequest) returns (Cart);
+  rpc ClearCart(ClearCartRequest) returns (Cart);
+  rpc CheckoutCart(CheckoutCartRequest) returns (Order);
 }

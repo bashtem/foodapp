@@ -2,5 +2,6 @@ import { UserService } from "./user.interface";
 import { AuthService } from "./auth.interface";
 import { RestaurantService } from "./restaurant.interface";
 import { UserRequest } from "./user.interface";
+import { OrderService } from "./orders.interface";
 
-export { UserService, AuthService, RestaurantService, UserRequest };
+export { UserService, AuthService, RestaurantService, OrderService, UserRequest };

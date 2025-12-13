@@ -6,6 +6,7 @@ import { AuthController } from "./auth/auth.controller";
 import { RestaurantsController } from "./restaurants/restaurants.controller";
 import { PaymentsController } from "./payments/payments.controller";
 import { OrdersController } from "./orders/orders.controller";
+import { CartsController } from "./carts/carts.controller";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Environment, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 import { UsersController } from "./users/users.controller";
@@ -93,6 +94,7 @@ import { UsersController } from "./users/users.controller";
   ],
   controllers: [
     OrdersController,
+    CartsController,
     RestaurantsController,
     PaymentsController,
     AuthController,

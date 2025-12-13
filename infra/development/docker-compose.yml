@@ -1,9 +1,7 @@
-version: '3.8'
-
-
 services:
   mysql_auth:
     image: mysql:8.0
+    container_name: mysql_auth
     environment:
       MYSQL_ROOT_PASSWORD: foodapp
       MYSQL_DATABASE: foodapp_auth
@@ -17,6 +15,7 @@ services:
 
   mysql_user:
     image: mysql:8.0
+    container_name: mysql_user
     environment:
       MYSQL_ROOT_PASSWORD: foodapp
       MYSQL_DATABASE: foodapp_user
@@ -29,7 +28,8 @@ services:
       - mysql_user_data:/var/lib/mysql
 
   pg_restaurant:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.5-alpine
+    container_name: pg_restaurant
     environment:
       POSTGRES_USER: foodapp
       POSTGRES_PASSWORD: foodapp
@@ -39,9 +39,23 @@ services:
       - foodapp_network
     volumes:
       - pg_restaurant_data:/var/lib/postgresql/data
-      
+
+  pg_order:
+    image: postgis/postgis:16-3.5-alpine
+    container_name: pg_order
+    environment:
+      POSTGRES_USER: foodapp
+      POSTGRES_PASSWORD: foodapp
+      POSTGRES_DB: foodapp_order
+    ports: ["5433:5432"]
+    networks:
+      - foodapp_network
+    volumes:
+      - pg_order_data:/var/lib/postgresql/data
+
   redis:
     image: redis:7
+    container_name: redis
     ports: ["6379:6379"]
     networks:
       - foodapp_network
@@ -50,10 +64,11 @@ services:
 
   nats:
     image: nats:2
-    ports: ["4222:4222","8222:8222"]
+    container_name: nats
+    ports: ["4222:4222", "8222:8222"]
     networks:
       - foodapp_network
-      
+
 networks:
   foodapp_network:
     driver: bridge
@@ -62,3 +77,4 @@ volumes:
   mysql_auth_data:
   redis_data:
   pg_restaurant_data:
+  pg_order_data:

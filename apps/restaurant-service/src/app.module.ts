@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { ClientsModule, Transport } from "@nestjs/microservices";
 import path from "path";
 import { RestaurantModule } from "./restaurant.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Environment } from "@foodapp/utils/src/enums/environment.enum";
-import { ServiceNatsEnum } from "@foodapp/utils/src/enums/service.enum";
 
 @Module({
   imports: [
@@ -31,19 +29,6 @@ import { ServiceNatsEnum } from "@foodapp/utils/src/enums/service.enum";
         logging: ["error", "warn", "schema"],
       }),
     }),
-    ClientsModule.registerAsync([
-      {
-        name: ServiceNatsEnum.RESTAURANT_NATS,
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.NATS,
-          options: {
-            servers: [config.get<string>("RESTAURANT_NATS_URL", "nats://localhost:4222")],
-          },
-        }),
-      },
-    ]),
 
     RestaurantModule,
   ],

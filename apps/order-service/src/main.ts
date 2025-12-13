@@ -6,7 +6,7 @@ import { join } from "path";
 import { Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-(async () => {
+const bootstrap = async () => {
   // Create an application context to access ConfigService
   const appContext = await NestFactory.createApplicationContext(AppModule);
   const configService = appContext.get(ConfigService);
@@ -23,4 +23,6 @@ import { ConfigService } from "@nestjs/config";
   });
   await app.listen();
   Logger.log(`Order Service listening on ${grpcUrl.split(":")[1] || 50051}`, "OrderService");
-})();
+};
+
+bootstrap();

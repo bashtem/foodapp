@@ -41,7 +41,7 @@ export class RestaurantService {
   }
 
   update(id: string, updateData: Partial<Restaurant>): Promise<Restaurant> {
-    this.logger.log(`Updating restaurant ID: ${id} with data: ${JSON.stringify(updateData)}`);
+    this.logger.log(`Updating restaurant ID: ${id} `);
     return this.restaurantRepo.save({ id, ...updateData });
   }
 

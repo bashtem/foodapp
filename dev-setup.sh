@@ -2,7 +2,7 @@
 
 ACTION=${1:-up}
 
-cd "infra/_dev" || exit 1
+cd "infra/development" || exit 1
 
 if [ "$ACTION" = "down" ]; then
   docker compose down

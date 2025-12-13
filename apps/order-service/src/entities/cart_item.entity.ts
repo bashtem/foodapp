@@ -9,6 +9,9 @@ export class CartItem {
   @Column({ type: "uuid" })
   cartId!: string;
 
+  @Column({ type: "uuid", nullable: true })
+  restaurantId?: string | null;
+
   @ManyToOne(() => Cart, (cart) => cart.items, { onDelete: "CASCADE" })
   @JoinColumn({ name: "cartId" })
   cart!: Cart;
