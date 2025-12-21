@@ -1,12 +1,13 @@
+import { CartItemDto } from "@foodapp/utils/src/dto";
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
+  DeleteDateColumn,
 } from "typeorm";
-import { CartItem } from "./cart_item.entity";
 
 @Entity("carts")
 export class Cart {
@@ -14,14 +15,24 @@ export class Cart {
   id!: string;
 
   @Column({ type: "uuid" })
+  @Index()
   userId!: string;
 
-  @OneToMany(() => CartItem, (cartItem) => cartItem.cart, { cascade: true })
-  items!: CartItem[];
+  @Column({ type: "uuid" })
+  restaurantId!: string;
+
+  @Column({ type: "jsonb", default: () => "'[]'::jsonb", nullable: false })
+  items!: CartItemDto[];
+
+  @Column({ type: "double precision", default: 0 })
+  totalPrice!: number;
 
   @CreateDateColumn()
   createdAt!: Date;
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

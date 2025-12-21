@@ -22,15 +22,20 @@ message GetCartRequest {
 }
 
 message CartItem {
-  string id = 1;
-  string menu_item_id = 2;
-  int32 quantity = 3;
+  string name = 1;
+  string menuItemId = 2;
+  string restaurantId = 3;
+  int32 quantity = 4;
+  double priceSnapshot = 5;
 }
 
 message Cart {
   string id = 1;
   string userId = 2;
-  repeated CartItem items = 3;
+  string restaurantId = 3;
+  repeated CartItem items = 4;
+  double totalPrice = 5;
+  string updatedAt = 6;
 }
 
 message AddCartItemRequest {
@@ -42,8 +47,9 @@ message AddCartItemRequest {
 
 message UpdateCartItemRequest {
   string userId = 1;
-  string itemId = 2;
-  int32 quantity = 3;
+  string menuItemId = 2;
+  string restaurantId = 3;
+  int32 quantity = 4;
 }
 
 message RemoveCartItemRequest {

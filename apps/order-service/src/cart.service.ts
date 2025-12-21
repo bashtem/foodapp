@@ -42,6 +42,18 @@ export class CartService {
     await this.cacheManager.set(this.cartCacheKey(userId), JSON.stringify(carts));
   }
 
+  async findMenuItem(menuItemId: string, restaurantId: string) {
+    this.logger.log(`Fetching menu item ${menuItemId} for restaurant ${restaurantId}`);
+    const menuItem = await firstValueFrom(
+      this.restaurantService.getMenuItem({ id: menuItemId, restaurantId })
+    );
+    if (!menuItem) {
+      this.logger.warn(`Menu item ${menuItemId} not found for restaurant ${restaurantId}`);
+      throw new Error("Menu item not found");
+    }
+    return menuItem;
+  }
+
   async addCartItem(data: UpdateCartGrpcDto) {
     const { userId, menuItemId, restaurantId, quantity } = data;
     let newItem: CartItemDto = { menuItemId, quantity, restaurantId };
@@ -58,14 +70,7 @@ export class CartService {
       throw new Error("Item already exists in cart");
     }
 
-    const menuItem = await firstValueFrom(
-      this.restaurantService.getMenuItem({ id: menuItemId, restaurantId })
-    );
-    if (!menuItem) {
-      this.logger.warn(`Menu item ${menuItemId} not found for restaurant ${restaurantId}`);
-      throw new Error("Menu item not found");
-    }
-
+    const menuItem = await this.findMenuItem(menuItemId, restaurantId);
     newItem = { ...newItem, name: menuItem.name, priceSnapshot: menuItem.price };
     cart.totalPrice += +(menuItem.price * quantity).toFixed(2);
     cart.items.push(newItem);
@@ -78,13 +83,10 @@ export class CartService {
 
   async createCart(data: UpdateCartGrpcDto, carts: Cart[] = []) {
     const { userId, menuItemId, restaurantId, quantity } = data;
-    let newItem: CartItemDto = { menuItemId, quantity, restaurantId };
-
     this.logger.log(`Creating new cart for user ${userId} and restaurant ${restaurantId}`);
-    const menuItem = await firstValueFrom(
-      this.restaurantService.getMenuItem({ id: menuItemId, restaurantId })
-    );
-    if (!menuItem) throw new Error("Menu item not found");
+
+    let newItem: CartItemDto = { menuItemId, quantity, restaurantId };
+    const menuItem = await this.findMenuItem(menuItemId, restaurantId);
 
     newItem = { ...newItem, name: menuItem.name, priceSnapshot: menuItem.price };
     const cart = this.cartRepo.create({
@@ -105,7 +107,6 @@ export class CartService {
 
     const carts = await this.getCart(userId);
     const cartIndex = carts?.findIndex((cart) => cart.restaurantId === restaurantId);
-
     if (cartIndex === -1) {
       this.logger.warn(`Cart not found for restaurant ${restaurantId} and user ${userId}`);
       throw new Error("Cart not found for restaurant");
@@ -118,11 +119,8 @@ export class CartService {
       throw new Error("Item not found in cart");
     }
 
+    await this.findMenuItem(menuItemId, restaurantId);
     const item = cart.items[itemIndex];
-    const menuItem = await firstValueFrom(
-      this.restaurantService.getMenuItem({ id: menuItemId, restaurantId })
-    );
-    if (!menuItem) throw new Error("Menu item not found");
     cart.totalPrice -= +((item.priceSnapshot as number) * item.quantity).toFixed(2);
     item.quantity = quantity;
     cart.totalPrice += +((item.priceSnapshot as number) * quantity).toFixed(2);
@@ -131,7 +129,7 @@ export class CartService {
     await this.cartRepo.save(cart);
     carts[cartIndex] = cart;
     await this.updateCache(userId, carts);
-    return item;
+    return cart;
   }
 
   async removeCartItem(userId: string, itemId: string) {

@@ -3,16 +3,19 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { join } from "path";
 import { Order } from "./entities/order.entity";
 import { Cart } from "./entities/cart.entity";
-import { CartItem } from "./entities/cart_item.entity";
 import { OrderService } from "./order.service";
+import { CartService } from "./cart.service";
 import { OrderGrpcController } from "./order.grpc";
 import { ClientsModule, Transport } from "@nestjs/microservices";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { ServiceNatsEnum } from "@foodapp/utils/src/enums";
+import { ServiceGrpcEnum, ServiceNatsEnum } from "@foodapp/utils/src/enums";
+import { CartGrpcController } from "./cart.grpc";
+import { CacheModule } from "@nestjs/cache-manager";
+import KeyvRedis from "@keyv/redis";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, Cart, CartItem]),
+    TypeOrmModule.forFeature([Order, Cart]),
     ConfigModule,
     ClientsModule.registerAsync([
       {
@@ -25,7 +28,7 @@ import { ServiceNatsEnum } from "@foodapp/utils/src/enums";
         }),
       },
       {
-        name: "RESTAURANT_GRPC",
+        name: ServiceGrpcEnum.RESTAURANT_GRPC,
         imports: [ConfigModule],
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -37,21 +40,18 @@ import { ServiceNatsEnum } from "@foodapp/utils/src/enums";
           },
         }),
       },
-      {
-        name: "REDIS",
-        imports: [ConfigModule],
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.REDIS,
-          options: {
-            host: config.get<string>("REDIS_HOST", "localhost"),
-            port: +config.get<string>("REDIS_PORT", "6379"),
-          },
-        }),
-      },
     ]),
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      isGlobal: true,
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get<number>("TTL_CACHE_MS", 86400000), // 1 day
+        stores: [new KeyvRedis(configService.get<string>("REDIS_URL", "redis://localhost:6379"))],
+      }),
+    }),
   ],
-  providers: [OrderService],
-  controllers: [OrderGrpcController],
+  providers: [OrderService, CartService],
+  controllers: [OrderGrpcController, CartGrpcController],
 })
 export class OrderModule {}

@@ -20,6 +20,15 @@ import {
   GetMenuItemGrpcDto,
   DeleteMenuItemGrpcDto,
 } from "./restaurant.dto";
+import {
+  AddCartItemDto,
+  UpdateCartGrpcDto,
+  RemoveCartItemDto,
+  CartDto,
+  CartItemDto,
+  CheckoutResponseDto,
+  UpdateCartItemDto,
+} from "./cart.dto";
 
 export {
   AuthDto,
@@ -41,4 +50,11 @@ export {
   MenuItemResponseDto,
   GetMenuItemGrpcDto,
   DeleteMenuItemGrpcDto,
+  AddCartItemDto,
+  UpdateCartItemDto,
+  UpdateCartGrpcDto,
+  RemoveCartItemDto,
+  CartDto,
+  CartItemDto,
+  CheckoutResponseDto,
 };

@@ -11,13 +11,16 @@ import {
   Logger,
   HttpException,
   HttpStatus,
+  ParseUUIDPipe,
 } from "@nestjs/common";
 import { ClientGrpc } from "@nestjs/microservices";
 import { firstValueFrom } from "rxjs";
 import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 import { OrderService } from "@foodapp/utils/src/interfaces";
+import { ApiSuccessCode, createResponse, grpcToHttpStatusMap } from "@foodapp/utils/src/response";
+import { AddCartItemDto, UpdateCartItemDto } from "@foodapp/utils/src/dto";
 
-// @UseGuards(AuthGuard) // integrate auth when ready
+// @UseGuards(AuthGuard) // FIXME:
 @Controller("carts")
 export class CartsController implements OnModuleInit {
   private orderService!: OrderService;
@@ -30,48 +33,57 @@ export class CartsController implements OnModuleInit {
   }
 
   @Get(":userId")
-  async get(@Param("userId") userId: string) {
+  async get(@Param("userId", ParseUUIDPipe) userId: string) {
     try {
-      const res = await firstValueFrom(this.orderService.getCart({ userId }));
-      return res;
+      const carts = await firstValueFrom(this.orderService.getCart({ userId }));
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.CART_GET_SUCCESS,
+        data: carts,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to get cart: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 
   @Post(":userId/items")
-  async addItem(@Param("userId") userId: string, @Body() body: any) {
+  async addItem(@Param("userId", ParseUUIDPipe) userId: string, @Body() body: AddCartItemDto) {
+    this.logger.log(`Adding item to cart for user ${userId}`);
     try {
-      const res = await firstValueFrom(
-        this.orderService.addCartItem({
-          userId,
-          menuItemId: body.menuItemId,
-          restaurantId: body.restaurantId,
-          quantity: body.quantity,
-        })
-      );
-      return res;
+      const cart = await firstValueFrom(this.orderService.addCartItem({ userId, ...body }));
+
+      return createResponse({
+        statusCode: HttpStatus.CREATED,
+        message: ApiSuccessCode.CART_ADD_ITEM_SUCCESS,
+        data: cart,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to add cart item: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 
   @Patch(":userId/items/:itemId")
   async updateItem(
-    @Param("userId") userId: string,
-    @Param("itemId") itemId: string,
-    @Body() body: any
+    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("itemId", ParseUUIDPipe) menuItemId: string,
+    @Body() body: UpdateCartItemDto
   ) {
+    this.logger.log(`Updating item ${menuItemId} in cart for user ${userId}`);
     try {
-      const res = await firstValueFrom(
-        this.orderService.updateCartItem({ userId, itemId, quantity: body.quantity })
+      const cart = await firstValueFrom(
+        this.orderService.updateCartItem({ userId, menuItemId, ...body })
       );
-      return res;
+
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.CART_UPDATE_ITEM_SUCCESS,
+        data: cart,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to update cart item: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 
@@ -87,7 +99,7 @@ export class CartsController implements OnModuleInit {
   }
 
   @Post(":userId/clear")
-  async clear(@Param("userId") userId: string) {
+  async clear(@Param("userId", ParseUUIDPipe) userId: string) {
     try {
       const res = await firstValueFrom(this.orderService.clearCart({ userId }));
       return res;
@@ -98,7 +110,7 @@ export class CartsController implements OnModuleInit {
   }
 
   @Post(":userId/checkout")
-  async checkout(@Param("userId") userId: string) {
+  async checkout(@Param("userId", ParseUUIDPipe) userId: string) {
     try {
       const res = await firstValueFrom(this.orderService.checkoutCart({ userId }));
       return res;
