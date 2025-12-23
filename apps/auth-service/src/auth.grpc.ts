@@ -33,11 +33,10 @@ export class AuthGrpcController {
   @GrpcMethod(ServiceEnum.AUTH_SERVICE, "Login")
   async login(data: AuthDto): Promise<AuthResponseDto> {
     const { email, password } = data;
-
     this.logger.log(`Login request for email: ${email}`);
+
     try {
       const user = await firstValueFrom(this.userService.findByEmail({ email }));
-
       const ok = await bcrypt.compare(password, user.hashedPassword as string);
 
       if (!ok)

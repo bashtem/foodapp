@@ -15,6 +15,7 @@ import {
 import { status } from "@grpc/grpc-js";
 import { ApiErrorCode } from "@foodapp/utils/src/response";
 import { ServiceEnum } from "@foodapp/utils/src/enums";
+import { MenuItem } from "./entities/menu_item.entity";
 
 @Controller()
 export class RestaurantGrpcController {
@@ -132,7 +133,10 @@ export class RestaurantGrpcController {
     const { id, restaurantId } = data;
     this.logger.log(`Getting menu item ID: ${id} for restaurant ID: ${restaurantId}`);
 
-    const menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
+    let menuItem: MenuItem | null;
+    if (!restaurantId) menuItem = await this.restaurantService.getMenuItem(id);
+    else menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
+
     if (!menuItem) {
       this.logger.warn(`Menu item not found with ID: ${id} for restaurant ${restaurantId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.MENU_ITEM_NOT_FOUND });
@@ -165,7 +169,10 @@ export class RestaurantGrpcController {
     const { id, restaurantId } = data;
     this.logger.log(`Deleting menu item ID: ${id}`);
 
-    const menuItem = await this.restaurantService.getMenuItemByRestaurant(restaurantId, id);
+    const menuItem = await this.restaurantService.getMenuItemByRestaurant(
+      restaurantId as string,
+      id
+    );
     if (!menuItem) {
       this.logger.warn(`Menu item not found with ID: ${id} for restaurant ${restaurantId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.MENU_ITEM_NOT_FOUND });

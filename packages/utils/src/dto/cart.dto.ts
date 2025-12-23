@@ -7,18 +7,13 @@ export class AddCartItemDto {
   @IsNotEmpty()
   menuItemId!: string;
 
-  @ApiProperty({ description: "Restaurant ID", example: "rest_789", type: String })
-  @IsString()
-  @IsNotEmpty()
-  restaurantId!: string;
-
   @ApiProperty({ description: "Quantity to add", example: 2, type: Number, minimum: 1 })
   @IsNumber()
   @Min(1)
   quantity!: number;
 }
 
-export class UpdateCartGrpcDto extends AddCartItemDto {
+export class AddCartGrpcDto extends AddCartItemDto {
   @ApiProperty({ description: "User ID", example: "user_123", type: String })
   @IsString()
   @IsNotEmpty()
@@ -26,16 +21,13 @@ export class UpdateCartGrpcDto extends AddCartItemDto {
 }
 
 export class UpdateCartItemDto {
-  @ApiProperty({ description: "Restaurant ID", example: "rest_789", type: String })
-  @IsString()
-  @IsNotEmpty()
-  restaurantId!: string;
-
   @ApiProperty({ description: "Quantity to add", example: 2, type: Number, minimum: 1 })
   @IsNumber()
   @Min(1)
   quantity!: number;
 }
+
+export class UpdateCartGrpcDto extends AddCartGrpcDto {}
 
 export class RemoveCartItemDto {
   @ApiProperty({ description: "User ID", example: "user_123", type: String })

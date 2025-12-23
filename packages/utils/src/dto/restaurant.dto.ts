@@ -355,7 +355,7 @@ export class GetMenuItemGrpcDto {
 
   @ApiProperty({ description: "Restaurant ID", example: "660e8400-e29b-41d4-a716-446655440000" })
   @IsUUID()
-  restaurantId!: string;
+  restaurantId?: string;
 }
 
 export class UpdateMenuItemGrpcDto extends CreateMenuItemGrpcDto {

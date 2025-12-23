@@ -88,24 +88,38 @@ export class CartsController implements OnModuleInit {
   }
 
   @Delete(":userId/items/:itemId")
-  async removeItem(@Param("userId") userId: string, @Param("itemId") itemId: string) {
+  async removeItem(
+    @Param("userId", ParseUUIDPipe) userId: string,
+    @Param("itemId", ParseUUIDPipe) itemId: string
+  ) {
+    this.logger.log(`Removing item ${itemId} from cart for user ${userId}`);
     try {
-      const res = await firstValueFrom(this.orderService.removeCartItem({ userId, itemId }));
-      return res;
+      const cart = await firstValueFrom(this.orderService.removeCartItem({ userId, itemId }));
+
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.CART_REMOVE_ITEM_SUCCESS,
+        data: cart,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to remove cart item: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 
-  @Post(":userId/clear")
+  @Delete(":userId/clear")
   async clear(@Param("userId", ParseUUIDPipe) userId: string) {
+    this.logger.log(`Clearing cart for user ${userId}`);
     try {
-      const res = await firstValueFrom(this.orderService.clearCart({ userId }));
-      return res;
+      await firstValueFrom(this.orderService.clearCart({ userId }));
+
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.CART_CLEAR_SUCCESS,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to clear cart: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 

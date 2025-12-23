@@ -28,6 +28,7 @@ import {
   CartItemDto,
   CheckoutResponseDto,
   UpdateCartItemDto,
+  AddCartGrpcDto,
 } from "./cart.dto";
 
 export {
@@ -51,6 +52,7 @@ export {
   GetMenuItemGrpcDto,
   DeleteMenuItemGrpcDto,
   AddCartItemDto,
+  AddCartGrpcDto,
   UpdateCartItemDto,
   UpdateCartGrpcDto,
   RemoveCartItemDto,
