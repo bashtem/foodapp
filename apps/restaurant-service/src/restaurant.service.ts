@@ -17,8 +17,8 @@ export class RestaurantService {
     return this.restaurantRepo.find();
   }
 
-  getMenu(restaurantId: string, isAvailable = true) {
-    return this.menuRepo.find({ where: { restaurantId, isAvailable } });
+  getMenu(restaurantId: string) {
+    return this.menuRepo.find({ where: { restaurantId } });
   }
 
   create(restaurantData: Partial<Restaurant>) {

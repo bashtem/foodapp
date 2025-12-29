@@ -6,7 +6,15 @@ import { ClientGrpc, RpcException } from "@nestjs/microservices";
 import { Cart } from "./entities/cart.entity";
 import { ServiceGrpcEnum, ServiceEnum } from "@foodapp/utils/src/enums";
 import { RestaurantService } from "@foodapp/utils/src/interfaces";
-import { UpdateCartGrpcDto, CartItemDto, AddCartGrpcDto } from "@foodapp/utils/src/dto";
+import {
+  UpdateCartGrpcDto,
+  CartItemDto,
+  AddCartGrpcDto,
+  CheckoutGrpcDto,
+  CheckoutResponseDto,
+  CheckoutResultDto,
+  MenuItemResponseDto,
+} from "@foodapp/utils/src/dto";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { status } from "@grpc/grpc-js";
 import { ApiErrorCode } from "@foodapp/utils/src/response";
@@ -56,6 +64,11 @@ export class CartService {
     return menuItem;
   }
 
+  newCartItem(menuItem: MenuItemResponseDto): CartItemDto {
+    const { id, name, price: priceSnapshot, restaurantId, isAvailable } = menuItem;
+    return { menuItemId: id, name, priceSnapshot, restaurantId, isAvailable, quantity: 0 };
+  }
+
   async addCartItem(data: AddCartGrpcDto) {
     const { userId, menuItemId, quantity } = data;
     this.logger.log(`Adding item ${menuItemId} (qty: ${quantity}) to cart for user ${userId}`);
@@ -74,9 +87,9 @@ export class CartService {
       });
     }
 
-    const { name, price: priceSnapshot, restaurantId } = menuItem;
-    const newItem: CartItemDto = { menuItemId, restaurantId, name, quantity, priceSnapshot };
-    cart.totalPrice += +(priceSnapshot * quantity).toFixed(2);
+    const newItem = this.newCartItem(menuItem);
+    newItem.quantity = quantity;
+    cart.totalPrice += +(newItem.priceSnapshot * quantity).toFixed(2);
     cart.items.push(newItem);
 
     await this.cartRepo.save(cart);
@@ -90,14 +103,17 @@ export class CartService {
       `Creating new cart with item ${menuItemId} (qty: ${quantity}) for user ${userId}`
     );
 
-    const { name, price: priceSnapshot, restaurantId } = await this.findMenuItem(menuItemId);
-    const newItem: CartItemDto = { menuItemId, restaurantId, name, quantity, priceSnapshot };
+    const menuItem = await this.findMenuItem(menuItemId);
+    const newItem = this.newCartItem(menuItem);
+    newItem.quantity = quantity;
+
     const cart = this.cartRepo.create({
       userId,
-      restaurantId,
+      restaurantId: newItem.restaurantId,
       items: [newItem],
-      totalPrice: +(priceSnapshot * quantity).toFixed(2),
+      totalPrice: +(newItem.priceSnapshot * quantity).toFixed(2),
     });
+
     await this.cartRepo.save(cart);
     carts.push(cart);
     await this.updateCache(userId, carts);
@@ -180,34 +196,80 @@ export class CartService {
     return;
   }
 
-  async checkoutCart(userId: string) {
+  private async fetchMenuForRestaurant(restaurantId: string) {
+    this.logger.log(`Fetching menu for restaurant ${restaurantId}`);
+    try {
+      const menu = await firstValueFrom(this.restaurantService.getMenu({ restaurantId }));
+      return menu.records;
+    } catch (err) {
+      this.logger.error(`Failed fetching menu for restaurant ${restaurantId}`, err as any);
+      throw new RpcException({
+        code: status.UNAVAILABLE,
+        message: ApiErrorCode.MENU_ITEM_NOT_FOUND,
+      });
+    }
+  }
+
+  private async validateAndSnapshotCart(cart: Cart, userId: string) {
+    const menuItems = await this.fetchMenuForRestaurant(cart.restaurantId as string);
+    const hashMap = new Map<string, MenuItemResponseDto>();
+    for (const menu of menuItems) hashMap.set(menu.id, menu);
+
+    // Validate each item and refresh priceSnapshot if changed
+    let total = 0;
+    for (const item of cart.items) {
+      const { menuItemId, restaurantId } = item;
+      const menuItem = hashMap.get(menuItemId);
+
+      if (!menuItem) {
+        this.logger.warn(`Menu item ${menuItemId} not found in restaurant ${restaurantId}`);
+        item.isAvailable = false;
+        continue;
+      }
+
+      if (!menuItem.isAvailable) this.logger.warn(`Menu item ${menuItemId} is not available`);
+
+      item.priceSnapshot = +menuItem.price.toFixed(2);
+      total += +(item.priceSnapshot * item.quantity).toFixed(2);
+    }
+
+    if (cart.totalPrice !== total) {
+      this.logger.log(`Cart total price updated from ${cart.totalPrice} to ${total}`);
+      cart.totalPrice = +total.toFixed(2);
+      await this.cartRepo.save(cart);
+      await this.cacheManager.del(this.cartCacheKey(userId));
+    }
+
+    return cart;
+  }
+
+  async checkoutCart(data: CheckoutGrpcDto): Promise<CheckoutResultDto> {
+    const { userId, restaurantId } = data;
+    this.logger.log(`Checking out cart for user ${userId} and restaurant ${restaurantId}`);
+
     const carts = await this.getCart(userId);
-    this.logger.log(`Checking out cart for user ${userId}`);
     if (!carts.length) {
       this.logger.warn(`Cart not found for user ${userId}`);
       throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.CART_NOT_FOUND });
     }
-    // if (!cart || !cart.items || cart.items.length === 0) throw new Error("Cart empty");
-    // let total = 0;
-    // const orderItems: any[] = [];
-    // for (const it of cart.items) {
-    //   if (!it.restaurantId)
-    //     throw new Error("Missing restaurantId for cart item; cannot lookup price");
-    //   try {
-    //     const resp = await firstValueFrom(
-    //       this.restaurantService.getMenuItem({
-    //         id: it.menuItemId,
-    //         restaurantId: it.restaurantId,
-    //       }) as any
-    //     );
-    //     const price = Number((resp && (resp as any).price) || 0);
-    //     total += price * (it.quantity || 0);
-    //     orderItems.push({ menu_item_id: it.menuItemId, quantity: it.quantity, unit_price: price });
-    //   } catch (e) {
-    //     this.logger.warn(`Failed to fetch price for menuItem ${it.menuItemId}: ${String(e)}`);
-    //     throw new Error(`Failed to fetch price for menu item ${it.menuItemId}`);
-    //   }
-    // }
-    // return { orderItems, total };
+
+    const cart = carts.find((cart) => cart.restaurantId === restaurantId);
+    if (!cart) {
+      this.logger.warn(`Cart for restaurant ${restaurantId} not found for user ${userId}`);
+      throw new RpcException({ code: status.NOT_FOUND, message: ApiErrorCode.CART_NOT_FOUND });
+    }
+
+    // validate items against restaurant menu and refresh price snapshots
+    const validatedCart = await this.validateAndSnapshotCart(cart, userId);
+
+    const orderItems = validatedCart.items.map<CheckoutResponseDto>((item) => ({
+      menuItemId: item.menuItemId,
+      quantity: item.quantity,
+      unitPrice: item.priceSnapshot as number,
+      isAvailable: item.isAvailable,
+    }));
+
+    const totalPrice = validatedCart.totalPrice;
+    return { cartId: validatedCart.id, orderItems, totalPrice };
   }
 }

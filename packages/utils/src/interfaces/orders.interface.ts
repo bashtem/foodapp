@@ -1,5 +1,12 @@
 import { Observable } from "rxjs";
-import { UpdateCartGrpcDto, CartDto, RemoveCartItemDto, AddCartGrpcDto } from "../dto";
+import {
+  UpdateCartGrpcDto,
+  CartDto,
+  RemoveCartItemDto,
+  AddCartGrpcDto,
+  CheckoutGrpcDto,
+  CheckoutResultDto,
+} from "../dto";
 
 export interface OrderService {
   getCart(req: { userId: string }): Observable<{ records: CartDto[] }>;
@@ -7,8 +14,8 @@ export interface OrderService {
   updateCartItem(req: UpdateCartGrpcDto): Observable<CartDto>;
   removeCartItem(req: RemoveCartItemDto): Observable<CartDto>;
   clearCart(req: { userId: string }): Observable<void>;
+  checkoutCart(req: CheckoutGrpcDto): Observable<CheckoutResultDto>;
   createOrder(req: any): any;
   getOrder(req: any): any;
   updateStatus(req: any): any;
-  checkoutCart(req: { userId: string }): any;
 }

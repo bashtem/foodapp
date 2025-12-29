@@ -1,9 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, IsNumber, Min } from "class-validator";
+import { IsNotEmpty, IsNumber, Min, IsUUID } from "class-validator";
 
 export class AddCartItemDto {
   @ApiProperty({ description: "Menu item ID", example: "menu_456", type: String })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   menuItemId!: string;
 
@@ -15,7 +15,7 @@ export class AddCartItemDto {
 
 export class AddCartGrpcDto extends AddCartItemDto {
   @ApiProperty({ description: "User ID", example: "user_123", type: String })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   userId!: string;
 }
@@ -31,22 +31,37 @@ export class UpdateCartGrpcDto extends AddCartGrpcDto {}
 
 export class RemoveCartItemDto {
   @ApiProperty({ description: "User ID", example: "user_123", type: String })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
   userId!: string;
 
   @ApiProperty({ description: "Cart item ID to remove", example: "item_abc", type: String })
-  @IsString()
+  @IsUUID()
   @IsNotEmpty()
-  itemId!: string;
+  menuItemId!: string;
+}
+
+export class CheckoutDto {
+  @ApiProperty({ description: "Restaurant ID", example: "rest_789", type: String, required: false })
+  @IsUUID()
+  @IsNotEmpty()
+  restaurantId?: string;
+}
+
+export class CheckoutGrpcDto extends CheckoutDto {
+  @ApiProperty({ description: "User ID", example: "user_123", type: String })
+  @IsUUID()
+  @IsNotEmpty()
+  userId!: string;
 }
 
 export interface CartItemDto {
-  name?: string;
+  name: string;
   menuItemId: string;
   restaurantId: string;
   quantity: number;
-  priceSnapshot?: number;
+  priceSnapshot: number;
+  isAvailable: boolean;
 }
 
 export interface CartDto {
@@ -60,7 +75,15 @@ export interface CartDto {
 }
 
 export interface CheckoutResponseDto {
-  orderId: string;
-  amountPaid: number;
+  menuItemId: string;
+  quantity: number;
+  unitPrice: number;
   currency?: string;
+  isAvailable: boolean;
+}
+
+export interface CheckoutResultDto {
+  orderItems: CheckoutResponseDto[];
+  totalPrice: number;
+  cartId: string;
 }

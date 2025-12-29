@@ -33,6 +33,7 @@ message CartItem {
   string restaurantId = 3;
   int32 quantity = 4;
   double priceSnapshot = 5;
+  bool isAvailable = 6;
 }
 
 message Cart {
@@ -67,6 +68,20 @@ message ClearCartRequest {
 
 message CheckoutCartRequest {
   string userId = 1;
+  string restaurantId = 2;
+}
+
+message CheckoutResponse {
+  string menuItemId = 1;
+  int32 quantity = 2;
+  double unitPrice = 3;
+  bool isAvailable = 4;
+}
+
+message CheckoutResult {
+  repeated CheckoutResponse orderItems = 1;
+  double totalPrice = 2;
+  string cartId = 3;
 }
 
 message UpdateStatusRequest {
@@ -91,5 +106,5 @@ service OrderService {
   rpc UpdateCartItem(UpdateCartItemRequest) returns (Cart);
   rpc RemoveCartItem(RemoveCartItemRequest) returns (Cart);
   rpc ClearCart(ClearCartRequest) returns (google.protobuf.Empty);
-  rpc CheckoutCart(CheckoutCartRequest) returns (Order);
+  rpc CheckoutCart(CheckoutCartRequest) returns (CheckoutResult);
 }

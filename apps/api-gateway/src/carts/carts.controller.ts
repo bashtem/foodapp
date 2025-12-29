@@ -18,7 +18,7 @@ import { firstValueFrom } from "rxjs";
 import { ServiceEnum, ServiceGrpcEnum } from "@foodapp/utils/src/enums";
 import { OrderService } from "@foodapp/utils/src/interfaces";
 import { ApiSuccessCode, createResponse, grpcToHttpStatusMap } from "@foodapp/utils/src/response";
-import { AddCartItemDto, UpdateCartItemDto } from "@foodapp/utils/src/dto";
+import { AddCartItemDto, CheckoutDto, UpdateCartItemDto } from "@foodapp/utils/src/dto";
 
 // @UseGuards(AuthGuard) // FIXME:
 @Controller("carts")
@@ -90,11 +90,11 @@ export class CartsController implements OnModuleInit {
   @Delete(":userId/items/:itemId")
   async removeItem(
     @Param("userId", ParseUUIDPipe) userId: string,
-    @Param("itemId", ParseUUIDPipe) itemId: string
+    @Param("itemId", ParseUUIDPipe) menuItemId: string
   ) {
-    this.logger.log(`Removing item ${itemId} from cart for user ${userId}`);
+    this.logger.log(`Removing item ${menuItemId} from cart for user ${userId}`);
     try {
-      const cart = await firstValueFrom(this.orderService.removeCartItem({ userId, itemId }));
+      const cart = await firstValueFrom(this.orderService.removeCartItem({ userId, menuItemId }));
 
       return createResponse({
         statusCode: HttpStatus.OK,
@@ -124,13 +124,19 @@ export class CartsController implements OnModuleInit {
   }
 
   @Post(":userId/checkout")
-  async checkout(@Param("userId", ParseUUIDPipe) userId: string) {
+  async checkout(@Param("userId", ParseUUIDPipe) userId: string, @Body() body: CheckoutDto) {
+    this.logger.log(`Checking out cart for user ${userId} and restaurant ${body.restaurantId}`);
     try {
-      const res = await firstValueFrom(this.orderService.checkoutCart({ userId }));
-      return res;
+      const checkout = await firstValueFrom(this.orderService.checkoutCart({ userId, ...body }));
+
+      return createResponse({
+        statusCode: HttpStatus.OK,
+        message: ApiSuccessCode.CART_CHECKOUT_SUCCESS,
+        data: checkout,
+      });
     } catch (error: any) {
       this.logger.error(`Failed to checkout cart: ${error.message}`);
-      throw new HttpException(error.details || error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.details, grpcToHttpStatusMap[error.code]);
     }
   }
 }

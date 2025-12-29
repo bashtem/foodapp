@@ -4,7 +4,12 @@ import { ServiceEnum } from "@foodapp/utils/src/enums";
 import { CartService } from "./cart.service";
 import { status } from "@grpc/grpc-js";
 import { ApiErrorCode } from "@foodapp/utils/src/response";
-import { AddCartGrpcDto, RemoveCartItemDto, UpdateCartGrpcDto } from "@foodapp/utils/src/dto";
+import {
+  AddCartGrpcDto,
+  CheckoutGrpcDto,
+  RemoveCartItemDto,
+  UpdateCartGrpcDto,
+} from "@foodapp/utils/src/dto";
 
 @Controller()
 export class CartGrpcController {
@@ -35,8 +40,8 @@ export class CartGrpcController {
 
   @GrpcMethod(ServiceEnum.ORDER_SERVICE, "RemoveCartItem")
   removeCartItem(data: RemoveCartItemDto) {
-    const { userId, itemId } = data;
-    return this.cartService.removeCartItem(userId, itemId);
+    const { userId, menuItemId } = data;
+    return this.cartService.removeCartItem(userId, menuItemId);
   }
 
   @GrpcMethod(ServiceEnum.ORDER_SERVICE, "ClearCart")
@@ -45,7 +50,7 @@ export class CartGrpcController {
   }
 
   @GrpcMethod(ServiceEnum.ORDER_SERVICE, "CheckoutCart")
-  checkoutCart(data: { userId: string }) {
-    return this.cartService.checkoutCart(data.userId);
+  checkoutCart(data: CheckoutGrpcDto) {
+    return this.cartService.checkoutCart(data);
   }
 }
