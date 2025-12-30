@@ -1,0 +1,9 @@
+export enum PaymentMethod {
+  CARD = "CARD",
+  PAYSTACK = "PAYSTACK",
+  FLUTTERWAVE = "FLUTTERWAVE",
+  STRIPE = "STRIPE",
+  CASH = "CASH",
+  WALLET = "WALLET",
+  BANK_TRANSFER = "BANK_TRANSFER",
+}

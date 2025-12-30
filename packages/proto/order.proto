@@ -4,15 +4,17 @@ import "google/protobuf/empty.proto";
 
 package order.v1;
 
-message OrderItem {
-  string menu_item_id = 1;
-  int32 quantity = 2;
-}
-
 message CreateOrderRequest {
-  string customer_id = 1;
-  string restaurant_id = 2;
-  repeated OrderItem items = 3;
+  string userId = 1;
+  string cartId = 2;
+  string paymentProvider = 3;
+  string currency = 4;
+  string deliveryAddress = 5;
+  string deliveryMethod = 6;
+  string deliveryInstructions = 7;
+  string restaurantMessage = 8;
+  string courierMessage = 9;
+  string paymentMethod = 10;
 }
 
 message GetOrderRequest {

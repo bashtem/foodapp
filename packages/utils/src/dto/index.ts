@@ -34,6 +34,8 @@ import {
   CheckoutResultDto,
 } from "./cart.dto";
 
+import { CreateOrderDto } from "./order.dto";
+
 export {
   AuthDto,
   RegisterUserDto,
@@ -65,4 +67,5 @@ export {
   CheckoutGrpcDto,
   CheckoutResponseDto,
   CheckoutResultDto,
+  CreateOrderDto,
 };

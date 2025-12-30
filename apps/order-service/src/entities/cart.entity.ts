@@ -27,6 +27,9 @@ export class Cart {
   @Column({ type: "double precision", default: 0 })
   totalPrice!: number;
 
+  @Column({ type: "boolean", default: false })
+  isCheckedOut!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

@@ -6,6 +6,7 @@ import {
   AddCartGrpcDto,
   CheckoutGrpcDto,
   CheckoutResultDto,
+  CreateOrderDto,
 } from "../dto";
 
 export interface OrderService {
@@ -15,7 +16,7 @@ export interface OrderService {
   removeCartItem(req: RemoveCartItemDto): Observable<CartDto>;
   clearCart(req: { userId: string }): Observable<void>;
   checkoutCart(req: CheckoutGrpcDto): Observable<CheckoutResultDto>;
-  createOrder(req: any): any;
+  createOrder(req: CreateOrderDto): Observable<any>;
   getOrder(req: any): any;
   updateStatus(req: any): any;
 }

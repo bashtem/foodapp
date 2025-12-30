@@ -36,6 +36,8 @@ export class User extends BaseEntity {
   @Column({ type: "boolean", default: true })
   isActive!: boolean;
 
+  address!: string;
+
   @CreateDateColumn()
   createdAt!: Date;
 
